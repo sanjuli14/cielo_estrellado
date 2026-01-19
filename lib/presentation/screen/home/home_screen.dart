@@ -134,8 +134,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final controller = ref.read(workTimerProvider.notifier);
 
     final timeStyle = Theme.of(context).textTheme.displaySmall?.copyWith(
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.bold,
           letterSpacing: 0.5,
+          fontFamily: "Poppins",
         );
 
     final finishedStyle = Theme.of(context).textTheme.displayMedium?.copyWith(
@@ -222,6 +223,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
               ),
+            if(timer.isRunning == false)
             const Positioned(
               bottom: 120,
               right: 45,

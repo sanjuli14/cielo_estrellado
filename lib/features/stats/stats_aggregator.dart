@@ -1,4 +1,6 @@
-import 'package:cielo_estrellado/features/stats/stats_models.dart';
+
+import 'package:cielo_estrellado/models/day_stats.dart';
+import 'package:cielo_estrellado/models/period_summary.dart';
 import 'package:cielo_estrellado/models/sessions.dart';
 
 DateTime _dayKey(DateTime dt) {

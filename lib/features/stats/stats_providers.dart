@@ -1,5 +1,6 @@
 import 'package:cielo_estrellado/features/stats/stats_aggregator.dart';
-import 'package:cielo_estrellado/features/stats/stats_models.dart';
+
+import 'package:cielo_estrellado/models/period_summary.dart';
 import 'package:cielo_estrellado/models/repositories/session_repositories.dart';
 import 'package:cielo_estrellado/models/sessions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

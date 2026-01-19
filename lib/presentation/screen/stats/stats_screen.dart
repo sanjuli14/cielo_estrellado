@@ -1,5 +1,6 @@
-import 'package:cielo_estrellado/features/stats/stats_models.dart';
+
 import 'package:cielo_estrellado/features/stats/stats_providers.dart';
+import 'package:cielo_estrellado/models/period_summary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -163,7 +164,7 @@ class StatsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Estadísticas'),
+        title: const Text('Estadísticas', style: TextStyle(fontFamily: "Poppins", fontWeight: FontWeight.bold),),
         backgroundColor: Colors.transparent,
       ),
       extendBodyBehindAppBar: true,
