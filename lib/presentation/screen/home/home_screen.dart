@@ -1,0 +1,301 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:cielo_estrellado/features/sky/sky_painter.dart';
+import 'package:cielo_estrellado/features/timer/timer_controller.dart';
+import 'package:cielo_estrellado/models/repositories/session_repositories.dart';
+import 'package:cielo_estrellado/models/sessions.dart';
+import 'package:cielo_estrellado/presentation/screen/stats/stats_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+
+class HomeScreen extends ConsumerStatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final GlobalKey _skyBoundaryKey = GlobalKey();
+  bool _savedSessionForThisRun = false;
+  bool _isSharing = false;
+  bool _showHud = false;
+
+  late final ProviderSubscription<WorkTimerState> _timerSub;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final sessionsRepo = ref.read(sessionRepositoryProvider);
+    _timerSub = ref.listenManual<WorkTimerState>(workTimerProvider, (previous, next) async {
+      final wasFinished = previous?.isFinished ?? false;
+      if (next.isFinished && !wasFinished) {
+        _savedSessionForThisRun = false;
+      }
+
+      if (next.isFinished && !_savedSessionForThisRun) {
+        final startedAt = next.startedAt;
+        final endedAt = next.endedAt;
+        if (startedAt == null || endedAt == null) return;
+
+        final starsGenerated = (3200 * next.skyProgress).round();
+        final session = Session(
+          id: endedAt.millisecondsSinceEpoch,
+          startTime: startedAt,
+          endTime: endedAt,
+          durationMinutes: next.elapsed.inMinutes,
+          starsGenerated: starsGenerated,
+        );
+
+        await sessionsRepo.saveSession(session);
+        _savedSessionForThisRun = true;
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Sesión guardada.')),
+          );
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timerSub.close();
+    super.dispose();
+  }
+
+  String _formatDuration(Duration d) {
+    final totalSeconds = d.inSeconds.clamp(0, 1 << 30);
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    final seconds = totalSeconds % 60;
+    if (hours > 0) {
+      final hh = hours.toString().padLeft(2, '0');
+      final mm = minutes.toString().padLeft(2, '0');
+      final ss = seconds.toString().padLeft(2, '0');
+      return '$hh:$mm:$ss';
+    }
+    final mm = minutes.toString().padLeft(2, '0');
+    final ss = seconds.toString().padLeft(2, '0');
+    return '$mm:$ss';
+  }
+
+  Future<XFile?> _captureSky() async {
+    final context = _skyBoundaryKey.currentContext;
+    if (context == null) return null;
+
+    final boundary = context.findRenderObject() as RenderRepaintBoundary?;
+    if (boundary == null) return null;
+
+    final pixelRatio = MediaQuery.of(this.context).devicePixelRatio;
+    final image = await boundary.toImage(pixelRatio: pixelRatio);
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (bytes == null) return null;
+
+    final dir = await getTemporaryDirectory();
+    final path = '${dir.path}/night_sky_${DateTime.now().millisecondsSinceEpoch}.png';
+    final file = File(path);
+    await file.writeAsBytes(bytes.buffer.asUint8List());
+    return XFile(file.path);
+  }
+
+  Future<void> _shareSky() async {
+    if (_isSharing) return;
+    setState(() {
+      _isSharing = true;
+    });
+
+    try {
+      await Future<void>.delayed(const Duration(milliseconds: 16));
+      final xfile = await _captureSky();
+      if (xfile == null) return;
+      await Share.shareXFiles(
+        [xfile],
+        text: 'Asi es mi cielo, consigue el tuyo aqui: <URL>',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSharing = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final timer = ref.watch(workTimerProvider);
+    final controller = ref.read(workTimerProvider.notifier);
+
+    final timeStyle = Theme.of(context).textTheme.displaySmall?.copyWith(
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+        );
+
+    final finishedStyle = Theme.of(context).textTheme.displayMedium?.copyWith(
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.6,
+        );
+
+    return Scaffold(
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onVerticalDragEnd: (details) {
+          if (timer.isRunning) return;
+          final v = details.primaryVelocity;
+          if (v == null) return;
+          if (v < -600) {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const StatsScreen(),
+              ),
+            );
+          }
+        },
+        onTap: () {
+          if (timer.isFinished) return;
+          setState(() {
+            _showHud = !_showHud;
+          });
+        },
+        onLongPress: () {
+          if (timer.isRunning) return;
+          if (timer.isFinished) {
+            _shareSky();
+            return;
+          }
+          controller.reset();
+        },
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: RepaintBoundary(
+                key: _skyBoundaryKey,
+                child: CustomPaint(
+                  painter: NightSkyPainter(
+                    seed: timer.skySeed,
+                    progress: timer.skyProgress,
+                  ),
+                ),
+              ),
+            ),
+            if (timer.isFinished)
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.35),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: Colors.white.withOpacity(0.10)),
+                  ),
+                  child: Text(
+                    _formatDuration(timer.elapsed),
+                    style: finishedStyle,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            if (_showHud && !timer.isFinished)
+              Align(
+                alignment: Alignment.topCenter,
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 24),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.30),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white.withOpacity(0.10)),
+                      ),
+                      child: Text(
+                        _formatDuration(timer.elapsed),
+                        style: timeStyle,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            const Positioned(
+              bottom: 120,
+              right: 45,
+              child: Text(
+                'Desliza hacia arriba para ver estadisticas',
+                style: TextStyle(
+                  fontFamily: "Poppins"
+                ),
+            ),
+            ),
+
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: SafeArea(
+                minimum: const EdgeInsets.only(bottom: 28),
+                child: timer.isFinished
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            onPressed: controller.toggle,
+                            icon: const Icon(Icons.play_arrow_rounded),
+                            iconSize: 34,
+                            style: IconButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.white.withOpacity(0.10),
+                              shape: const CircleBorder(),
+                              padding: const EdgeInsets.all(18),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          IconButton(
+                            onPressed: _isSharing ? null : _shareSky,
+                            icon: const Icon(Icons.ios_share_rounded),
+                            iconSize: 26,
+                            style: IconButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.white.withOpacity(0.10),
+                              shape: const CircleBorder(),
+                              padding: const EdgeInsets.all(18),
+                            ),
+                          ),
+                        ],
+                      )
+                    : IconButton(
+                        onPressed: controller.toggle,
+                        icon: Icon(
+                          timer.isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                        ),
+                        iconSize: 34,
+                        style: IconButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.white.withOpacity(0.10),
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(18),
+                        ),
+                      ),
+              ),
+            ),
+            if (_isSharing)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SafeArea(
+                  minimum: const EdgeInsets.fromLTRB(24, 0, 24, 88),
+                  child: LinearProgressIndicator(
+                    minHeight: 2,
+                    backgroundColor: Colors.white.withOpacity(0.06),
+                    color: Colors.white.withOpacity(0.75),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
