@@ -8,7 +8,8 @@ class SessionRepository {
   /// Guarda una sesión en Hive
   Future<void> saveSession(Session session) async {
     final box = await Hive.openBox<Session>(boxName);
-    await box.put(session.id, session);
+    // Usar add() en lugar de put() para que Hive genere un ID válido automáticamente
+    await box.add(session);
   }
 
   /// Devuelve todas las sesiones guardadas

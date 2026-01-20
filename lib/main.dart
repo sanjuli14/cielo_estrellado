@@ -1,3 +1,5 @@
+import 'package:cielo_estrellado/models/day_stats.dart';
+import 'package:cielo_estrellado/models/period_summary.dart';
 import 'package:cielo_estrellado/models/sessions.dart';
 import 'package:cielo_estrellado/presentation/screen/home/home_screen.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +13,8 @@ void main() async {
   await Hive.initFlutter();
 
   Hive.registerAdapter(SessionAdapter());
+  Hive.registerAdapter(DayStatAdapter());
+  Hive.registerAdapter(PeriodSummaryAdapter());
   await Hive.openBox<Session>('sessions');
 
   runApp(const ProviderScope(child: NightTimerApp()));

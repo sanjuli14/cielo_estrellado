@@ -52,14 +52,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           starsGenerated: starsGenerated,
         );
 
+        print('💾 Saving session: ${session.id}');
+        print('   Start: ${session.startTime}');
+        print('   End: ${session.endTime}');
+        print('   Duration: ${session.durationMinutes} minutes');
+        print('   Stars: ${session.starsGenerated}');
+        
         await sessionsRepo.saveSession(session);
         _savedSessionForThisRun = true;
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Sesión guardada.')),
-          );
-        }
+        print('✅ Session saved successfully!');
       }
     });
   }

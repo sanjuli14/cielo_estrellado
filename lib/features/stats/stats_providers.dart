@@ -14,20 +14,29 @@ final statsAggregatorProvider = Provider<StatsAggregator>((ref) {
   return const StatsAggregator();
 });
 
-final weeklySummaryProvider = Provider<AsyncValue<PeriodSummary>>((ref) {
-  final sessionsAsync = ref.watch(sessionsStreamProvider);
+final weeklySummaryProvider = StreamProvider<PeriodSummary>((ref) {
   final agg = ref.watch(statsAggregatorProvider);
-
-  return sessionsAsync.whenData((sessions) {
-    return agg.weeklySummary(sessions);
+  final sessionsStream = ref.watch(sessionRepositoryProvider).watchSessions();
+  
+  return sessionsStream.map((sessions) {
+    print('📅 Weekly: Processing ${sessions.length} sessions');
+    for (var s in sessions) {
+      print('  - Session: ${s.startTime} -> ${s.endTime}, ${s.durationMinutes}min');
+    }
+    final summary = agg.weeklySummary(sessions);
+    print('📅 Weekly Summary: ${summary.sessions} sessions, ${summary.totalMinutes} minutes');
+    return summary;
   });
 });
 
-final monthlySummaryProvider = Provider<AsyncValue<PeriodSummary>>((ref) {
-  final sessionsAsync = ref.watch(sessionsStreamProvider);
+final monthlySummaryProvider = StreamProvider<PeriodSummary>((ref) {
   final agg = ref.watch(statsAggregatorProvider);
-
-  return sessionsAsync.whenData((sessions) {
-    return agg.monthlySummary(sessions);
+  final sessionsStream = ref.watch(sessionRepositoryProvider).watchSessions();
+  
+  return sessionsStream.map((sessions) {
+    print('📆 Monthly: Processing ${sessions.length} sessions');
+    final summary = agg.monthlySummary(sessions);
+    print('📆 Monthly Summary: ${summary.sessions} sessions, ${summary.totalMinutes} minutes');
+    return summary;
   });
 });

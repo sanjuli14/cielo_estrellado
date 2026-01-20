@@ -145,15 +145,31 @@ class StatsScreen extends ConsumerWidget {
 
   Widget _section(BuildContext context, AsyncValue<PeriodSummary> async, String title) {
     return async.when(
-      data: (s) => Column(
-        children: [
-          _summaryCard(context, title, s),
-          const SizedBox(height: 16),
-          _dayList(context, s),
-        ],
-      ),
-      error: (e, _) => Text('Error: $e'),
-      loading: () => const Center(child: CircularProgressIndicator()),
+      data: (s) {
+        // Debug output
+        print('📊 $title - Sessions: ${s.sessions}, Total Minutes: ${s.totalMinutes}');
+        print('📊 $title - Days: ${s.byDay.length}, Start: ${s.start}, End: ${s.end}');
+        
+        return Column(
+          children: [
+            _summaryCard(context, title, s),
+            const SizedBox(height: 16),
+            _dayList(context, s),
+          ],
+        );
+      },
+      error: (e, st) {
+        print('❌ Error in $title: $e');
+        print('Stack trace: $st');
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text('Error: $e\n\nStack: $st'),
+        );
+      },
+      loading: () {
+        print('⏳ Loading $title...');
+        return const Center(child: CircularProgressIndicator());
+      },
     );
   }
 
