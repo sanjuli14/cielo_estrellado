@@ -1,6 +1,10 @@
+
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:cielo_estrellado/features/sky/constellation_provider.dart';
+import 'package:cielo_estrellado/features/sky/constellations.dart';
+import 'package:cielo_estrellado/features/sky/moon_phase_calculator.dart';
 import 'package:cielo_estrellado/features/sky/sky_painter.dart';
 import 'package:cielo_estrellado/features/timer/timer_controller.dart';
 import 'package:cielo_estrellado/models/repositories/session_repositories.dart';
@@ -19,20 +23,28 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
   final GlobalKey _skyBoundaryKey = GlobalKey();
   bool _savedSessionForThisRun = false;
   bool _isSharing = false;
   bool _showHud = false;
 
   late final ProviderSubscription<WorkTimerState> _timerSub;
+  late final AnimationController _twinkleController;
 
   @override
   void initState() {
     super.initState();
 
+    _twinkleController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 40),
+    )
+      ..repeat();
+
     final sessionsRepo = ref.read(sessionRepositoryProvider);
-    _timerSub = ref.listenManual<WorkTimerState>(workTimerProvider, (previous, next) async {
+    _timerSub = ref.listenManual<WorkTimerState>(
+        workTimerProvider, (previous, next) async {
       final wasFinished = previous?.isFinished ?? false;
       if (next.isFinished && !wasFinished) {
         _savedSessionForThisRun = false;
@@ -57,7 +69,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         print('   End: ${session.endTime}');
         print('   Duration: ${session.durationMinutes} minutes');
         print('   Stars: ${session.starsGenerated}');
-        
+
         await sessionsRepo.saveSession(session);
         _savedSessionForThisRun = true;
 
@@ -69,6 +81,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void dispose() {
     _timerSub.close();
+    _twinkleController.dispose();
     super.dispose();
   }
 
@@ -95,13 +108,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final boundary = context.findRenderObject() as RenderRepaintBoundary?;
     if (boundary == null) return null;
 
-    final pixelRatio = MediaQuery.of(this.context).devicePixelRatio;
+    final pixelRatio = MediaQuery
+        .of(this.context)
+        .devicePixelRatio;
     final image = await boundary.toImage(pixelRatio: pixelRatio);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
     if (bytes == null) return null;
 
     final dir = await getTemporaryDirectory();
-    final path = '${dir.path}/night_sky_${DateTime.now().millisecondsSinceEpoch}.png';
+    final path = '${dir.path}/night_sky_${DateTime
+        .now()
+        .millisecondsSinceEpoch}.png';
     final file = File(path);
     await file.writeAsBytes(bytes.buffer.asUint8List());
     return XFile(file.path);
@@ -134,17 +151,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final timer = ref.watch(workTimerProvider);
     final controller = ref.read(workTimerProvider.notifier);
+    final constellationsAsync = ref.watch(unlockedConstellationsProvider);
 
-    final timeStyle = Theme.of(context).textTheme.displaySmall?.copyWith(
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.5,
-          fontFamily: "Poppins",
-        );
+    final timeStyle = Theme
+        .of(context)
+        .textTheme
+        .displaySmall
+        ?.copyWith(
+      fontWeight: FontWeight.bold,
+      letterSpacing: 0.5,
+      fontFamily: "Poppins",
+    );
 
-    final finishedStyle = Theme.of(context).textTheme.displayMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.6,
-        );
+    final finishedStyle = Theme
+        .of(context)
+        .textTheme
+        .displayMedium
+        ?.copyWith(
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0.6,
+    );
 
     return Scaffold(
       body: GestureDetector(
@@ -161,8 +187,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             );
           }
         },
-        onTap: () {
+        onTapUp: (details) {
+          if (timer.isRunning) return;
           if (timer.isFinished) return;
+
+          // Check for constellation tap
+          final constellations = constellationsAsync.asData?.value ?? [];
+          final box = _skyBoundaryKey.currentContext
+              ?.findRenderObject() as RenderBox?;
+          if (box != null && constellations.isNotEmpty) {
+            final localPos = box.globalToLocal(details.globalPosition);
+            final size = box.size;
+
+            for (final c in constellations) {
+              // Simple bounding box or proximity check for points
+              // Let's check proximity to any star point in the constellation
+              for (final pt in c.points) {
+                final cx = pt.x * size.width;
+                final cy = pt.y * size.height;
+                final dist = (Offset(cx, cy) - localPos).distance;
+                if (dist < 30.0) { // Touch radius
+                  // Show info
+                  _showConstellationInfo(context, c);
+                  return;
+                }
+              }
+            }
+          }
+
           setState(() {
             _showHud = !_showHud;
           });
@@ -178,32 +230,146 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Stack(
           children: [
             Positioned.fill(
-              child: RepaintBoundary(
-                key: _skyBoundaryKey,
-                child: CustomPaint(
-                  painter: NightSkyPainter(
-                    seed: timer.skySeed,
-                    progress: timer.skyProgress,
-                  ),
-                ),
+              child: AnimatedBuilder(
+                  animation: _twinkleController,
+                  builder: (context, child) {
+                    return RepaintBoundary(
+                      key: _skyBoundaryKey,
+                      child: CustomPaint(
+                        painter: NightSkyPainter(
+                          seed: timer.skySeed,
+                          progress: timer.skyProgress,
+                          twinkleValue: _twinkleController.value,
+                          moonPhase: MoonPhaseCalculator.getMoonPhase(DateTime
+                              .now()),
+                          constellations: constellationsAsync.asData?.value ??
+                              [],
+                        ),
+                      ),
+                    );
+                  }
               ),
+            ),
+            if(timer.isRunning == false)
+            Positioned(
+                top: 190,
+                left: 270,
+                child:Text(
+                  "Fase Lunar",
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontFamily: "Poppins",
+                    fontWeight: FontWeight.bold
+                  ) ,
+                ),
             ),
             if (timer.isFinished)
               Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24, vertical: 20),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.35),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.white.withOpacity(0.10)),
+                    color: Colors.black.withOpacity(0.65),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.white.withOpacity(0.12)),
                   ),
-                  child: Text(
-                    _formatDuration(timer.elapsed),
-                    style: finishedStyle,
-                    textAlign: TextAlign.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '¡Sesión completada!',
+                        style: Theme
+                            .of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '${timer.elapsed.inMinutes} minutos de foco',
+                        style: finishedStyle?.copyWith(fontSize: 32),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${(3200 * timer.skyProgress)
+                            .round()} estrellas generadas',
+                        style: const TextStyle(
+                          color: Color(0xFFFFD1A4),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        height: 1,
+                        width: 60,
+                        color: Colors.white.withOpacity(0.2),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'El cielo de hoy quedó completo. Compartelo con amigos',
+                        style: TextStyle(
+                          color: Colors.white60,
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
               ),
+
+            // Start Ritual (Idle State)
+            if (!timer.isRunning && !timer.isFinished)
+              Align(
+                alignment: Alignment.center,
+                child: StreamBuilder<List<Session>>(
+                  stream: ref.watch(sessionRepositoryProvider).watchSessions(),
+                  builder: (context, snapshot) {
+                    final sessions = snapshot.data ?? [];
+                    Session? lastSession;
+                    if (sessions.isNotEmpty) {
+                      lastSession = sessions.last;
+                    }
+
+                    return IgnorePointer(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Esta noche vas por 45 minutos',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          if (lastSession != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              'Última sesión: ${lastSession
+                                  .durationMinutes} min — ${lastSession
+                                  .starsGenerated} estrellas',
+                              style: const TextStyle(
+                                color: Colors.white54,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+
             if (_showHud && !timer.isFinished)
               Align(
                 alignment: Alignment.topCenter,
@@ -211,11 +377,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 24),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.30),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white.withOpacity(0.10)),
+                        border: Border.all(color: Colors.white.withOpacity(
+                            0.10)),
                       ),
                       child: Text(
                         _formatDuration(timer.elapsed),
@@ -226,16 +394,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             if(timer.isRunning == false)
-            const Positioned(
-              bottom: 120,
-              right: 45,
-              child: Text(
-                'Desliza hacia arriba para ver estadisticas',
-                style: TextStyle(
-                  fontFamily: "Poppins"
+              const Positioned(
+                bottom: 120,
+                right: 45,
+                child: IgnorePointer(
+                  child: Text(
+                    'Desliza hacia arriba para ver estadisticas',
+                    style: TextStyle(
+                        fontFamily: "Poppins"
+                    ),
+                  ),
                 ),
-            ),
-            ),
+              ),
 
             Align(
               alignment: Alignment.bottomCenter,
@@ -243,46 +413,47 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 minimum: const EdgeInsets.only(bottom: 28),
                 child: timer.isFinished
                     ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            onPressed: controller.toggle,
-                            icon: const Icon(Icons.play_arrow_rounded),
-                            iconSize: 34,
-                            style: IconButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              backgroundColor: Colors.white.withOpacity(0.10),
-                              shape: const CircleBorder(),
-                              padding: const EdgeInsets.all(18),
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          IconButton(
-                            onPressed: _isSharing ? null : _shareSky,
-                            icon: const Icon(Icons.ios_share_rounded),
-                            iconSize: 26,
-                            style: IconButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              backgroundColor: Colors.white.withOpacity(0.10),
-                              shape: const CircleBorder(),
-                              padding: const EdgeInsets.all(18),
-                            ),
-                          ),
-                        ],
-                      )
-                    : IconButton(
-                        onPressed: controller.toggle,
-                        icon: Icon(
-                          timer.isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                        ),
-                        iconSize: 34,
-                        style: IconButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: Colors.white.withOpacity(0.10),
-                          shape: const CircleBorder(),
-                          padding: const EdgeInsets.all(18),
-                        ),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: controller.toggle,
+                      icon: const Icon(Icons.play_arrow_rounded),
+                      iconSize: 34,
+                      style: IconButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.white.withOpacity(0.10),
+                        shape: const CircleBorder(),
+                        padding: const EdgeInsets.all(18),
                       ),
+                    ),
+                    const SizedBox(width: 14),
+                    IconButton(
+                      onPressed: _isSharing ? null : _shareSky,
+                      icon: const Icon(Icons.ios_share_rounded),
+                      iconSize: 26,
+                      style: IconButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.white.withOpacity(0.10),
+                        shape: const CircleBorder(),
+                        padding: const EdgeInsets.all(18),
+                      ),
+                    ),
+                  ],
+                )
+                    : IconButton(
+                  onPressed: controller.toggle,
+                  icon: Icon(
+                    timer.isRunning ? Icons.pause_rounded : Icons
+                        .play_arrow_rounded,
+                  ),
+                  iconSize: 34,
+                  style: IconButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.white.withOpacity(0.10),
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(18),
+                  ),
+                ),
               ),
             ),
             if (_isSharing)
@@ -300,6 +471,57 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showConstellationInfo(BuildContext context, Constellation c) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0A0E21),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                c.name,
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .headlineMedium
+                    ?.copyWith(
+                  color: Colors.white,
+                  fontFamily: "Poppins",
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Desbloqueada a las ${c.starsRequired} estrellas',
+                style: const TextStyle(
+                  color: Colors.amber,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                c.description,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
     );
   }
 }

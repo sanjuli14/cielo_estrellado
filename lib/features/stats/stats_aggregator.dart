@@ -1,7 +1,9 @@
 
 import 'package:cielo_estrellado/models/day_stats.dart';
+import 'package:cielo_estrellado/models/month_stats.dart';
 import 'package:cielo_estrellado/models/period_summary.dart';
 import 'package:cielo_estrellado/models/sessions.dart';
+import 'package:intl/intl.dart';
 
 DateTime _dayKey(DateTime dt) {
   return DateTime(dt.year, dt.month, dt.day);
@@ -14,6 +16,7 @@ class StatsAggregator {
     final n = now ?? DateTime.now();
     final today = _dayKey(n);
 
+    // Last 7 days including today
     final start = today.subtract(const Duration(days: 6));
     final end = today;
 
@@ -26,6 +29,40 @@ class StatsAggregator {
     final start = DateTime(end.year, end.month, 1);
 
     return _summaryForRange(sessions, start: start, end: end);
+  }
+
+  List<MonthStat> last12MonthsSummary(List<Session> sessions, {DateTime? now}) {
+     final n = now ?? DateTime.now();
+     // Current month
+     final currentMonth = DateTime(n.year, n.month, 1);
+     
+     // Generate keys for the last 12 months (inclusive of current)
+     final months = <DateTime>[];
+     for (int i = 11; i >= 0; i--) {
+       final d = DateTime(n.year, n.month - i, 1);
+       months.add(DateTime(d.year, d.month, 1));
+     }
+
+     final Map<DateTime, MonthStat> map = {};
+     for (final m in months) {
+       map[m] = MonthStat(month: m, sessions: 0, totalMinutes: 0, totalStars: 0);
+     }
+
+     for (final s in sessions) {
+       final cardMonth = DateTime(s.startTime.year, s.startTime.month, 1);
+       if (map.containsKey(cardMonth)) {
+         final prev = map[cardMonth]!;
+         map[cardMonth] = MonthStat(
+           month: cardMonth,
+           sessions: prev.sessions + 1,
+           totalMinutes: prev.totalMinutes + s.durationMinutes,
+           totalStars: prev.totalStars + (s.starsGenerated ?? 0), // Handle potential null if older sessions don't have it? Model has required though.
+           // Actually Session model had starsGenerated as required, so it should be fine.
+         );
+       }
+     }
+
+     return map.values.toList()..sort((a,b) => a.month.compareTo(b.month));
   }
 
   PeriodSummary _summaryForRange(
@@ -41,7 +78,7 @@ class StatsAggregator {
     final byDayMap = <DateTime, DayStat>{};
     for (var i = 0; i < daysCount; i++) {
       final day = startDay.add(Duration(days: i));
-      byDayMap[day] = DayStat(day: day, sessions: 0, minutes: 0);
+      byDayMap[day] = DayStat(day: day, sessions: 0, minutes: 0, starsGenerated: 0);
     }
 
     int totalMinutes = 0;
@@ -55,10 +92,13 @@ class StatsAggregator {
       if (prev == null) continue;
 
       final minutes = s.durationMinutes;
+      final stars = s.starsGenerated; 
+
       byDayMap[day] = DayStat(
         day: day,
         sessions: prev.sessions + 1,
         minutes: prev.minutes + minutes,
+        starsGenerated: prev.starsGenerated + stars,
       );
 
       totalMinutes += minutes;

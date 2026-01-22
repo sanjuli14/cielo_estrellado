@@ -13,9 +13,13 @@ class DayStat extends HiveObject {
   @HiveField(2)
   int minutes;
 
+  @HiveField(3)
+  int starsGenerated;
+
   DayStat({
     required this.day,
     required this.sessions,
     required this.minutes,
+    required this.starsGenerated,
   });
 }

@@ -1,4 +1,5 @@
 import 'package:cielo_estrellado/features/stats/stats_aggregator.dart';
+import 'package:cielo_estrellado/models/month_stats.dart';
 
 import 'package:cielo_estrellado/models/period_summary.dart';
 import 'package:cielo_estrellado/models/repositories/session_repositories.dart';
@@ -38,5 +39,14 @@ final monthlySummaryProvider = StreamProvider<PeriodSummary>((ref) {
     final summary = agg.monthlySummary(sessions);
     print('📆 Monthly Summary: ${summary.sessions} sessions, ${summary.totalMinutes} minutes');
     return summary;
+  });
+});
+
+final last12MonthsSummaryProvider = StreamProvider<List<MonthStat>>((ref) {
+  final agg = ref.watch(statsAggregatorProvider);
+  final sessionsStream = ref.watch(sessionRepositoryProvider).watchSessions();
+
+  return sessionsStream.map((sessions) {
+    return agg.last12MonthsSummary(sessions);
   });
 });

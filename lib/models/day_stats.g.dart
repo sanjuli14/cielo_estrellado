@@ -20,19 +20,22 @@ class DayStatAdapter extends TypeAdapter<DayStat> {
       day: fields[0] as DateTime,
       sessions: fields[1] as int,
       minutes: fields[2] as int,
+      starsGenerated: fields[3] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, DayStat obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.day)
       ..writeByte(1)
       ..write(obj.sessions)
       ..writeByte(2)
-      ..write(obj.minutes);
+      ..write(obj.minutes)
+      ..writeByte(3)
+      ..write(obj.starsGenerated);
   }
 
   @override
