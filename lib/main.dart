@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'core/theme/app_theme.dart';
+import 'package:cielo_estrellado/core/notifications/notification_service.dart';
 
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -14,6 +15,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('es', null);
   await Hive.initFlutter();
+  
+  await NotificationService().init();
 
   Hive.registerAdapter(SessionAdapter());
   Hive.registerAdapter(DayStatAdapter());

@@ -2,6 +2,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:cielo_estrellado/core/notifications/notification_service.dart';
 import 'package:cielo_estrellado/features/sky/constellation_provider.dart';
 import 'package:cielo_estrellado/features/sky/constellations.dart';
 import 'package:cielo_estrellado/features/sky/moon_phase_calculator.dart';
@@ -13,6 +14,7 @@ import 'package:cielo_estrellado/presentation/screen/stats/stats_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -27,7 +29,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
   final GlobalKey _skyBoundaryKey = GlobalKey();
   bool _savedSessionForThisRun = false;
   bool _isSharing = false;
-  bool _showHud = false;
 
   late final ProviderSubscription<WorkTimerState> _timerSub;
   late final AnimationController _twinkleController;
@@ -76,6 +77,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         print('✅ Session saved successfully!');
       }
     });
+
+    _loadAndScheduleReminder();
+  }
+
+  Future<void> _loadAndScheduleReminder() async {
+    final box = await Hive.openBox('settings');
+    final int? hour = box.get('notif_hour');
+    final int? minute = box.get('notif_minute');
+
+    if (hour != null && minute != null) {
+      final time = TimeOfDay(hour: hour, minute: minute);
+      await NotificationService().scheduleDailyNotification(
+        id: 0,
+        title: 'Es hora de ver las estrellas',
+        body: 'Enfocate mientras trabajas, y genera un cielo brillante',
+        time: time,
+      );
+    }
   }
 
   @override
@@ -100,6 +119,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     final ss = seconds.toString().padLeft(2, '0');
     return '$mm:$ss';
   }
+
 
   Future<XFile?> _captureSky() async {
     final context = _skyBoundaryKey.currentContext;
@@ -147,11 +167,72 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     }
   }
 
+  Future<void> _setupReminder() async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: const TimeOfDay(hour: 23, minute: 00),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFFFFD1A4),
+              onPrimary: Colors.black,
+              surface: Color(0xFF1A1F3C),
+              onSurface: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+
+    if (picked != null) {
+      final granted = await NotificationService().requestPermissions();
+      if (granted) {
+        // Guardar en Hive
+        final box = await Hive.openBox('settings');
+        await box.put('notif_hour', picked.hour);
+        await box.put('notif_minute', picked.minute);
+
+        await NotificationService().scheduleDailyNotification(
+          id: 0,
+          title: 'Es hora de ver las estrellas',
+          body: 'Enfocate mientras trabajas, y genera un cielo brillante',
+          time: picked,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Recordatorio diario programado a las ${picked.format(context)}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              backgroundColor: const Color(0xFFFFD1A4),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Permisos de notificación rechazados'),
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final timer = ref.watch(workTimerProvider);
     final controller = ref.read(workTimerProvider.notifier);
     final constellationsAsync = ref.watch(unlockedConstellationsProvider);
+
+    final moonPhaseValue = MoonPhaseCalculator.getMoonPhase(DateTime.now());
+    final moonPhaseEnum = MoonPhaseCalculator.getPhaseName(moonPhaseValue);
+    final moonPhaseLabel = MoonPhaseCalculator.getMoonPhaseLabel(moonPhaseEnum);
 
     final timeStyle = Theme
         .of(context)
@@ -161,6 +242,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       fontWeight: FontWeight.bold,
       letterSpacing: 0.5,
       fontFamily: "Poppins",
+      fontSize: 64
     );
 
     final finishedStyle = Theme
@@ -214,10 +296,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               }
             }
           }
-
-          setState(() {
-            _showHud = !_showHud;
-          });
         },
         onLongPress: () {
           if (timer.isRunning) return;
@@ -240,8 +318,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                           seed: timer.skySeed,
                           progress: timer.skyProgress,
                           twinkleValue: _twinkleController.value,
-                          moonPhase: MoonPhaseCalculator.getMoonPhase(DateTime
-                              .now()),
                           constellations: constellationsAsync.asData?.value ??
                               [],
                         ),
@@ -249,19 +325,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                     );
                   }
               ),
-            ),
-            if(timer.isRunning == false)
-            Positioned(
-                top: 190,
-                left: 270,
-                child:Text(
-                  "Fase Lunar",
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontFamily: "Poppins",
-                    fontWeight: FontWeight.bold
-                  ) ,
-                ),
             ),
             if (timer.isFinished)
               Center(
@@ -289,7 +352,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        '${timer.elapsed.inMinutes} minutos de foco',
+                        '${timer.elapsed.inMinutes} minutos de enfoque',
                         style: finishedStyle?.copyWith(fontSize: 32),
                         textAlign: TextAlign.center,
                       ),
@@ -341,13 +404,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text(
-                            'Esta noche vas por 45 minutos',
+                          Text(
+                            'Activa tu Enfoque',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 22,
+                              fontSize: 30,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 0.5,
+                              fontFamily: 'Poppins'
                             ),
                           ),
                           if (lastSession != null) ...[
@@ -370,7 +434,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               ),
 
 
-            if (_showHud && !timer.isFinished)
+            if (!timer.isFinished)
+              Positioned(
+                top: 24,
+                left: 16,
+                child: SafeArea(
+                  child: IconButton(
+                    icon: const Icon(Icons.notifications_active_outlined, color: Colors.white38),
+                    onPressed: _setupReminder,
+                    tooltip: 'Configurar recordatorio diario',
+                  ),
+                ),
+              ),
+
+            if (!timer.isFinished)
               Align(
                 alignment: Alignment.topCenter,
                 child: SafeArea(
@@ -381,13 +458,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                           horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.30),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white.withOpacity(
-                            0.10)),
                       ),
-                      child: Text(
-                        _formatDuration(timer.elapsed),
-                        style: timeStyle,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _formatDuration(timer.elapsed),
+                            style: timer.isRunning ? const TextStyle(
+                                fontSize: 10, fontFamily: 'Poppins', fontWeight: FontWeight.bold
+                            ) : timeStyle
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            moonPhaseLabel.toUpperCase(),
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.4),
+                              fontSize: 10,
+                              letterSpacing: 1.5,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

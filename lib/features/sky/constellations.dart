@@ -38,7 +38,7 @@ class Constellation {
       id: 'orion',
       name: 'Orión',
       description: 'El Cazador. Una de las constelaciones más reconocibles del cielo nocturno.',
-      starsRequired: 500,
+      starsRequired: 500000,
       points: [
           // Betelgeuse (Top Left)
           ConstellationPoint(0.35, 0.40), 
@@ -74,7 +74,7 @@ class Constellation {
       id: 'cassiopeia',
       name: 'Casiopea',
       description: 'La Reina. Reconocible por su forma de "W" o "M".',
-      starsRequired: 1200,
+      starsRequired: 1200000,
       points: [
         ConstellationPoint(0.65, 0.20), // Caph
         ConstellationPoint(0.70, 0.25), // Schedar
@@ -93,7 +93,7 @@ class Constellation {
       id: 'ursa_major',
       name: 'Osa Mayor',
       description: 'El Gran Carro es parte de esta constelación.',
-      starsRequired: 2500,
+      starsRequired: 2500000,
       points: [
         ConstellationPoint(0.15, 0.20), // Dubhe
         ConstellationPoint(0.20, 0.22), // Merak

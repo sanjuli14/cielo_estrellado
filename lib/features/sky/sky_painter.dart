@@ -8,14 +8,12 @@ class NightSkyPainter extends CustomPainter {
   final int seed;
   final double progress;
   final double twinkleValue; // 0.0 to 1.0
-  final double moonPhase; // 0.0 to 1.0
   final List<Constellation> constellations;
 
   NightSkyPainter({
     required this.seed,
     required this.progress,
     this.twinkleValue = 0.0,
-    this.moonPhase = 0.0,
     this.constellations = const [],
   });
 
@@ -46,7 +44,6 @@ class NightSkyPainter extends CustomPainter {
 
     canvas.drawRect(Offset.zero & size, bgPaint);
 
-    _paintMoon(canvas, size);
     _paintMilkyWayDust(canvas, size, p);
     _paintStars(canvas, size, p);
     _paintConstellations(canvas, size);
@@ -98,275 +95,6 @@ class NightSkyPainter extends CustomPainter {
     }
   }
 
-  void _paintMoon(Canvas canvas, Size size) {
-    // Position: Top right, but slightly inset
-    final cx = size.width * 0.8;
-    final cy = size.height * 0.2;
-    final radius = size.shortestSide * 0.04;
-
-    final moonCenter = Offset(cx, cy);
-
-    // Glow
-    final glowPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFFE0E0E0).withOpacity(0.15),
-          const Color(0xFFE0E0E0).withOpacity(0.0),
-        ],
-        stops: const [0.0, 1.0],
-      ).createShader(Rect.fromCircle(center: moonCenter, radius: radius * 2));
-    canvas.drawCircle(moonCenter, radius * 2, glowPaint);
-
-    // Base Moon (lit part)
-    final moonPaint = Paint()..color = const Color(0xFFEADDCA); // Bone white/cream
-    
-    // Logic to draw phase:
-    // We start with a full circle path
-    final moonPath = Path()..addOval(Rect.fromCircle(center: moonCenter, radius: radius));
-
-    // Calculate shadow offset to simulate phase
-    // 0.0 = New Moon (Fully shadowed)
-    // 0.5 = Full Moon (No shadow)
-    // 1.0 = New Moon (Fully shadowed)
-    
-    // We can simulate phases by subtracting another circle (the shadow) moving across
-    
-    // Simplified rendering for "realistic" enough feel:
-    // Use the cosine of the phase to determine how much "shadow" circle overlaps
-    
-    // Actually, a better approach for crescents is usually scaling a circle
-    // But let's try a masking approach which is robust.
-    
-    // Let's use a simpler visual approximation:
-    // We draw the full moon, then draw a "shadow" circle on top of it.
-    
-    // Actually, drawing the LIT part is safer to avoid artifacts with the background starfield if we drew black shadow.
-    // But we are painting ON TOP of background, so we can't draw "black" as shadow, it would obscure stars behind the moon (which is correct physics, but maybe tricky).
-    // The moon (and its dark side) should obscure stars.
-    
-    // So:
-    // 1. Draw a black circle (the dark side) to obscure stars behind the moon.
-    final darkSidePaint = Paint()..color = const Color(0xFF050810); // Match approx sky color or just black
-    canvas.drawCircle(moonCenter, radius, darkSidePaint);
-
-    // 2. Draw the lit part on top.
-    
-    // Phase 0..1
-    // 0 = New (0% lit)
-    // 0.25 = First Quarter (50% lit, right side)
-    // 0.5 = Full (100% lit)
-    // 0.75 = Last Quarter (50% lit, left side)
-    
-    // We can use an arc combined with a semi-ellipse.
-    
-    canvas.save();
-    canvas.translate(cx, cy);
-    // Rotate to match typical ecliptic angle if we wanted, but upright is fine for now.
-
-    if (moonPhase <= 0.5) {
-      // Waxing (New -> Full)
-      // Light is growing from Right side. 
-      // Actually standard view: New -> First Q -> Full
-      // Visual: ) -> D -> O
-      
-      // We will draw the lit portion.
-      // Normalize phase 0.0 -> 0.5 to 0.0 -> 1.0
-      final progress = moonPhase / 0.5; 
-      
-      // We can use drawArc for the outer edge, and a curve for the terminator.
-      
-      final rect = Rect.fromCircle(center: Offset.zero, radius: radius);
-      
-      if (progress < 0.05) {
-         // New moon, essentially invisible
-      } else {
-        // Draw standard crescent to gibbous logic is complex with paths. 
-        // Let's us a shadow mask trick instead? 
-        // It's harder without blending modes impacting the whole layer.
-        
-        // Let's stick to simple Path operations.
-        final path = Path();
-        
-        // Right semicircle (always lit during 0->0.5? No, First Q is 0.25)
-        // 0.0 -> 0.5:
-        // 0.25 is exactly half moon (Right side lit).
-        // < 0.25 is Crescent (Right sliver).
-        // > 0.25 is Gibbous (Right side + bulge to left).
-
-        path.addArc(rect, -math.pi / 2, math.pi); // Right semicircle
-        
-        // The terminator curve:
-        // Starts at top (0, -r), ends at bottom (0, r).
-        // Control point x varies.
-        // At 0.0 phase (New), x = radius (pushes right to edge).
-        // At 0.25 phase (Half), x = 0 (straight line).
-        // At 0.5 phase (Full), x = -radius (pushes left to edge).
-        
-        double xControl = radius * (1 - 4 * moonPhase); 
-        // phase 0 => r (correct, curve hides right side -> empty) -- wait.
-        // If we draw right semicircle, and then SUBTRACT the left-bulging curve?
-        
-        // Let's construct the LIT path.
-        final litPath = Path();
-        litPath.moveTo(0, -radius);
-        litPath.arcToPoint(Offset(0, radius), radius: Radius.circular(radius), clockwise: true); // Right arc
-        
-        // Now return to top via the terminator.
-        // We use an elliptical arc for the terminator.
-        // Width of ellipse depends on phase.
-        
-        // Width from center. 
-        // Phase 0.0 -> width = -radius (curve touches right edge, area 0)
-        // Phase 0.25 -> width = 0 (straight line)
-        // Phase 0.5 -> width = radius (curve touches left edge, full circle)
-        
-        double w = radius * (2 * progress - 1); 
-        // p=0 -> -r. p=0.5 -> 0. p=1 -> r.
-        
-        // We need to draw a semi-ellipse from (0, r) back to (0, -r).
-        // If w > 0, we bulge left (Gibbous).
-        // If w < 0, we bulge right (Crescent), cutting into the semicircle? 
-        // Wait, if w < 0 (Crescent), the lit part is the crescent. 
-        // My logic for right semicircle assumes Gibbous or Half.
-        
-        // Correct logic for Waxing (0 -> 0.5):
-        // Lit part is always on the right.
-        // Boundary is standard circle on right.
-        // Terminator moves from right edge to left edge.
-        
-        final terminator = Path();
-        terminator.moveTo(0, -radius);
-        
-        // Draw ellipse arc
-        // Rect for ellipse: 
-        // Center (0,0). Width |w|*2. Height r*2.
-        
-        if (w == 0) {
-           terminator.lineTo(0, radius); // Straight line
-        } else {
-           // If w < 0 (Crescent), we want to curve to the right. 
-           // If w > 0 (Gibbous), we want to curve to the left.
-           
-           // arcToPoint doesn't do ellipses easily.
-           // We can verify scale.
-           
-           // Simplified: Use scaling.
-           final tPath = Path();
-           tPath.moveTo(0, -radius);
-           tPath.arcToPoint(Offset(0, radius), radius: Radius.circular(radius), clockwise: w > 0); 
-           // If w > 0 (Gibbous), clockwise from top goes Right? No.
-           // Top (0,-r) to Bottom (0,r). 
-           // Clockwise goes via Right. Counter-Clockwise via Left.
-           
-           // We want curve to pass through (-w, 0).
-           // If phase is 0.5 (Full), w=r. We want (-r, 0). That is Left side. Counter-Clockwise!
-           
-           // If phase is 0.25 (Half), w=0. Straight.
-           
-           // If phase is 0 (New), w=-r. We want (r, 0). That is Right side. Clockwise!
-           
-           // So if w > 0 (Gibbous), we want CCW (Left bulge).
-           // If w < 0 (Crescent), we want CW (Right bulge).
-           
-           // But wait, if w < 0 (Crescent), we are drawing the terminator for the crescent. 
-           // The lit path is Right Semicircle MINUS the gap? 
-           // OR Lit path is just the crescent.
-           
-           // Let's perform a transformation trick.
-           // Draw a generic half-circle. Scale X.
-           
-           // Re-think:
-           // Always draw Right Semicircle.
-           // Then Add/Subtract the semi-ellipse on the left/right of the Y axis.
-           
-           // Actually, simpler:
-           // 1. Draw Right Semicircle (White).
-           // 2. If Gibbous (0.25 < p < 0.5): Draw Left Semi-Ellipse (White).
-           // 3. If Crescent (0 < p < 0.25): Draw Right Semi-Ellipse (Black/Dark).
-           
-           // Let's refine limits.
-           // p=0.0 -> w = -1 (New). 
-           // p=0.25 -> w=0 (Half).
-           // p=0.5 -> w=1 (Full).
-           
-           final hemi = Path()
-             ..addArc(rect, -math.pi/2, math.pi); // Right hemi
-           canvas.drawPath(hemi, moonPaint);
-           
-           double wNorm = (moonPhase - 0.25) / 0.25; // -1 to 1
-           
-           if (wNorm.abs() > 0.01) {
-             final ellipseRect = Rect.fromLTWH(-radius * wNorm.abs(), -radius, radius * wNorm.abs() * 2, radius * 2);
-             final ellipse = Path()..addOval(ellipseRect);
-             
-             // We only want the LEFT half of the ellipse logic... wait.
-             // If wNorm > 0 (Gibbous): We want the left half of the ellipse to be WHITE.
-             // If wNorm < 0 (Crescent): We want the right half of the ellipse to be DARK (cutting into the white hemi).
-             
-             // Since we just drew the ellipse, we need to clip it?
-             // Actually drawing the full oval is fine if we clip half?
-             
-             canvas.save();
-             // Clip to Left side of Y-axis if Gibbous (white addition)
-             // Clip to Right side of Y-axis if Crescent (dark subtraction)
-             
-             if (wNorm > 0) {
-               // Gibbous: Add white bulge on left
-               canvas.clipRect(Rect.fromLTWH(-radius, -radius, radius, radius * 2)); // Left rect
-               canvas.drawPath(ellipse, moonPaint);
-             } else {
-               // Crescent: Subtract white bulge on right (draw dark)
-               canvas.clipRect(Rect.fromLTWH(0, -radius, radius, radius * 2)); // Right rect
-               canvas.drawPath(ellipse, darkSidePaint);
-             }
-             canvas.restore();
-           }
-        }
-      }
-    } else {
-      // Waning (Full -> New)
-      // Light is shrinking from Right side? No.
-      // Full -> Last Q -> New.
-      // O -> C -> (
-      // Lit part is on the LEFT.
-      
-      final rect = Rect.fromCircle(center: Offset.zero, radius: radius);
-      
-      // 1. Draw Left Semicircle (White).
-      final hemi = Path()
-         ..addArc(rect, math.pi/2, math.pi); // Left hemi
-      canvas.drawPath(hemi, moonPaint);
-      
-      // p goes 0.5 -> 1.0.
-      // p=0.5 (Full) -> w=1. 
-      // p=0.75 (Last Q) -> w=0.
-      // p=1.0 (New) -> w=-1.
-      
-      double wNorm = (0.75 - moonPhase) / 0.25; 
-      // p=0.5 -> (0.25)/0.25 = 1 (Gibbous equivalent)
-      // p=0.75 -> 0
-      // p=1.0 -> -1 (Crescent equivalent)
-      
-       if (wNorm.abs() > 0.01) {
-           final ellipseRect = Rect.fromLTWH(-radius * wNorm.abs(), -radius, radius * wNorm.abs() * 2, radius * 2);
-           final ellipse = Path()..addOval(ellipseRect);
-           
-           canvas.save();
-           if (wNorm > 0) {
-             // Gibbous (Waning Gibbous): Add white bulge on RIGHT.
-             canvas.clipRect(Rect.fromLTWH(0, -radius, radius, radius * 2)); // Right rect
-             canvas.drawPath(ellipse, moonPaint);
-           } else {
-             // Crescent (Waning Crescent): Subtract white bulge on LEFT (draw dark).
-             canvas.clipRect(Rect.fromLTWH(-radius, -radius, radius, radius * 2)); // Left rect
-             canvas.drawPath(ellipse, darkSidePaint);
-           }
-           canvas.restore();
-       }
-    }
-
-    canvas.restore();
-  }
 
   void _paintVignette(Canvas canvas, Size size) {
     final vignette = Paint()
@@ -526,7 +254,6 @@ class NightSkyPainter extends CustomPainter {
     return oldDelegate.seed != seed || 
            oldDelegate.progress != progress ||
            oldDelegate.twinkleValue != twinkleValue ||
-           oldDelegate.moonPhase != moonPhase ||
            oldDelegate.constellations != constellations;
   }
 }
