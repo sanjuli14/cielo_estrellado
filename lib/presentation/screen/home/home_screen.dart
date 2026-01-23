@@ -156,7 +156,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       if (xfile == null) return;
       await Share.shareXFiles(
         [xfile],
-        text: 'Asi es mi cielo, consigue el tuyo aqui: https://github.com/sanjuli14/cielo_estrellado/releases/download/v1.0.0/Focus.Night.apk',
+        text: 'Asi es mi cielo, consigue el tuyo aqui: https://sensational-belekoy-25572d.netlify.app/',
       );
     } finally {
       if (mounted) {
