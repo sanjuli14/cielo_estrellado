@@ -4,6 +4,7 @@ import 'package:cielo_estrellado/models/month_stats.dart';
 import 'package:cielo_estrellado/models/period_summary.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:cielo_estrellado/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -14,10 +15,16 @@ class StatsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final weekly = ref.watch(weeklySummaryProvider);
     final monthlyStars = ref.watch(last12MonthsSummaryProvider);
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Estadísticas', style: TextStyle(fontFamily: "Poppins", fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context)!.statsTitle, 
+          style: TextStyle(
+            fontFamily: "Poppins", 
+            fontWeight: FontWeight.bold,
+            fontSize: screenWidth * 0.05,
+          )),
         backgroundColor: Colors.transparent,
       ),
       extendBodyBehindAppBar: true,
@@ -52,14 +59,17 @@ class _DailyHoursSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Horas diarias (últimos 7 días)', style: Theme.of(context).textTheme.titleMedium),
+          Text(AppLocalizations.of(context)!.statsDailyHours, 
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontSize: MediaQuery.of(context).size.width * 0.045,
+            )),
           const SizedBox(height: 24),
           SizedBox(
-            height: 200,
+            height: MediaQuery.of(context).size.height * 0.25, // Dynamic height
             child: data.when(
               data: (summary) => _DailyHoursChart(summary: summary),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, st) => Center(child: Text('Error: $e')),
+              error: (e, st) => Center(child: Text(AppLocalizations.of(context)!.statsError(e.toString()))),
             ),
           ),
         ],
@@ -85,14 +95,17 @@ class _MonthlyStarsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Estrellas mensuales', style: Theme.of(context).textTheme.titleMedium),
+          Text(AppLocalizations.of(context)!.statsMonthlyStars, 
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontSize: MediaQuery.of(context).size.width * 0.045,
+            )),
           const SizedBox(height: 24),
           SizedBox(
-            height: 200,
+            height: MediaQuery.of(context).size.height * 0.25, // Dynamic height
             child: data.when(
               data: (stats) => _MonthlyStarsChart(stats: stats),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, st) => Center(child: Text('Error: $e')),
+              error: (e, st) => Center(child: Text(AppLocalizations.of(context)!.statsError(e.toString()))),
             ),
           ),
         ],
@@ -129,8 +142,9 @@ class _DailyHoursChart extends StatelessWidget {
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
               final day = days[groupIndex];
               final minutes = rod.toY * 60;
+              final locale = Localizations.localeOf(context).languageCode;
               return BarTooltipItem(
-                '${DateFormat.E('es').format(day)}\n',
+                '${DateFormat.E(locale).format(day)}\n',
                 const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -138,7 +152,7 @@ class _DailyHoursChart extends StatelessWidget {
                 ),
                 children: <TextSpan>[
                   TextSpan(
-                    text: '${minutes.toInt()} min',
+                    text: '${minutes.toInt()} ${AppLocalizations.of(context)!.statsUnitMin}',
                     style: const TextStyle(
                       color: Colors.yellow,
                       fontSize: 12,
@@ -159,10 +173,11 @@ class _DailyHoursChart extends StatelessWidget {
                  final index = value.toInt();
                 if (index < 0 || index >= days.length) return const SizedBox.shrink();
                 final day = days[index];
+                final locale = Localizations.localeOf(context).languageCode;
                 return Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    DateFormat.E('es').format(day)[0].toUpperCase(), // First letter of day
+                    DateFormat.E(locale).format(day)[0].toUpperCase(), // First letter of day
                     style: const TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 );
@@ -243,7 +258,7 @@ class _MonthlyStarsChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (stats.isEmpty) {
-      return const Center(child: Text('No hay datos disponibles'));
+      return Center(child: Text(AppLocalizations.of(context)!.statsNoData));
     }
 
     return BarChart(
@@ -255,8 +270,9 @@ class _MonthlyStarsChart extends StatelessWidget {
             // tooltipBgColor: Colors.blueGrey,
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
               final stat = stats[groupIndex];
+              final locale = Localizations.localeOf(context).languageCode;
               return BarTooltipItem(
-                '${DateFormat.MMM('es').format(stat.month)}\n',
+                '${DateFormat.MMM(locale).format(stat.month)}\n',
                 const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -264,7 +280,7 @@ class _MonthlyStarsChart extends StatelessWidget {
                 ),
                 children: <TextSpan>[
                   TextSpan(
-                    text: '${stat.totalStars} estrellas',
+                    text: '${stat.totalStars} ${AppLocalizations.of(context)!.statsUnitStars}',
                      style: const TextStyle(
                       color: Colors.yellow,
                       fontSize: 12,
@@ -287,10 +303,11 @@ class _MonthlyStarsChart extends StatelessWidget {
                  // Show every other month if too many, or just letter?
                  // Let's show first letter of month
                 final stat = stats[index];
+                final locale = Localizations.localeOf(context).languageCode;
                 return Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    DateFormat.MMM('es').format(stat.month).toUpperCase(),
+                    DateFormat.MMM(locale).format(stat.month).toUpperCase(),
                     style: const TextStyle(color: Colors.white70, fontSize: 10),
                   ),
                 );

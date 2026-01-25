@@ -34,84 +34,126 @@ class Constellation {
 
   // Static list of constellations
   static const List<Constellation> all = [
+
+    // ================= ORION =================
     Constellation(
       id: 'orion',
       name: 'Orión',
-      description: 'El Cazador. Una de las constelaciones más reconocibles del cielo nocturno.',
-      starsRequired: 500000,
+      description: 'El Cazador. Una de las constelaciones más reconocibles.',
+      starsRequired: 50000,
       points: [
-          // Betelgeuse (Top Left)
-          ConstellationPoint(0.35, 0.40), 
-          // Bellatrix (Top Right)
-          ConstellationPoint(0.48, 0.38),
-          // Mintaka (Belt Left)
-          ConstellationPoint(0.40, 0.50),
-          // Alnilam (Belt Middle)
-          ConstellationPoint(0.43, 0.51),
-          // Alnitak (Belt Right)
-          ConstellationPoint(0.46, 0.52),
-          // Saiph (Bottom Left)
-          ConstellationPoint(0.38, 0.65),
-          // Rigel (Bottom Right)
-          ConstellationPoint(0.50, 0.62),
+        ConstellationPoint(0.47, 0.46),
+        ConstellationPoint(0.53, 0.46),
+        ConstellationPoint(0.49, 0.50),
+        ConstellationPoint(0.50, 0.51),
+        ConstellationPoint(0.51, 0.52),
+        ConstellationPoint(0.48, 0.56),
+        ConstellationPoint(0.52, 0.55),
       ],
       lines: [
-          // Shoulders
-          ConstellationLine(0, 2), // Betelgeuse -> Belt Left
-          ConstellationLine(1, 4), // Bellatrix -> Belt Right
-          // Belt
-          ConstellationLine(2, 3),
-          ConstellationLine(3, 4),
-          // Legs
-          ConstellationLine(2, 5), // Belt Left -> Saiph
-          ConstellationLine(4, 6), // Belt Right -> Rigel
-          // Body/Shield? (Simplified)
-          ConstellationLine(0, 1),
-          ConstellationLine(5, 6),
+        ConstellationLine(0,2),
+        ConstellationLine(1,4),
+        ConstellationLine(2,3),
+        ConstellationLine(3,4),
+        ConstellationLine(2,5),
+        ConstellationLine(4,6),
+        ConstellationLine(0,1),
+        ConstellationLine(5,6),
       ],
     ),
+
+    // ================= CRUX =================
+    Constellation(
+      id: 'crux',
+      name: 'Cruz del Sur',
+      description: 'Constelación emblemática del hemisferio sur.',
+      starsRequired: 5000,
+      points: [
+        ConstellationPoint(0.50, 0.44),
+        ConstellationPoint(0.50, 0.48),
+        ConstellationPoint(0.50, 0.54),
+        ConstellationPoint(0.47, 0.50),
+        ConstellationPoint(0.53, 0.50),
+      ],
+      lines: [
+        ConstellationLine(0,1),
+        ConstellationLine(1,2),
+        ConstellationLine(3,1),
+        ConstellationLine(1,4),
+      ],
+    ),
+
+    // ================= SCORPIUS =================
+    Constellation(
+      id: 'scorpius',
+      name: 'Escorpión',
+      description: 'Constelación con forma de gancho.',
+      starsRequired: 10000,
+      points: [
+        ConstellationPoint(0.51, 0.43),
+        ConstellationPoint(0.49, 0.46),
+        ConstellationPoint(0.48, 0.49),
+        ConstellationPoint(0.49, 0.52),
+        ConstellationPoint(0.52, 0.55),
+        ConstellationPoint(0.56, 0.58),
+        ConstellationPoint(0.60, 0.61),
+      ],
+      lines: [
+        ConstellationLine(0,1),
+        ConstellationLine(1,2),
+        ConstellationLine(2,3),
+        ConstellationLine(3,4),
+        ConstellationLine(4,5),
+        ConstellationLine(5,6),
+      ],
+    ),
+
+    // ================= CASSIOPEIA =================
     Constellation(
       id: 'cassiopeia',
       name: 'Casiopea',
-      description: 'La Reina. Reconocible por su forma de "W" o "M".',
-      starsRequired: 1200000,
+      description: 'La Reina. Forma de W.',
+      starsRequired: 70000,
       points: [
-        ConstellationPoint(0.65, 0.20), // Caph
-        ConstellationPoint(0.70, 0.25), // Schedar
-        ConstellationPoint(0.73, 0.22), // Gamma Cas
-        ConstellationPoint(0.76, 0.28), // Ruchbah
-        ConstellationPoint(0.80, 0.23), // Segin
+        ConstellationPoint(0.47, 0.46),
+        ConstellationPoint(0.49, 0.44),
+        ConstellationPoint(0.51, 0.46),
+        ConstellationPoint(0.53, 0.44),
+        ConstellationPoint(0.55, 0.46),
       ],
       lines: [
-        ConstellationLine(0, 1),
-        ConstellationLine(1, 2),
-        ConstellationLine(2, 3),
-        ConstellationLine(3, 4),
+        ConstellationLine(0,1),
+        ConstellationLine(1,2),
+        ConstellationLine(2,3),
+        ConstellationLine(3,4),
       ],
     ),
-     Constellation(
+
+    // ================= URSA MAJOR =================
+    Constellation(
       id: 'ursa_major',
       name: 'Osa Mayor',
-      description: 'El Gran Carro es parte de esta constelación.',
-      starsRequired: 2500000,
+      description: 'El Gran Carro.',
+      starsRequired: 100000,
       points: [
-        ConstellationPoint(0.15, 0.20), // Dubhe
-        ConstellationPoint(0.20, 0.22), // Merak
-        ConstellationPoint(0.18, 0.28), // Phad
-        ConstellationPoint(0.14, 0.27), // Megrez
-        ConstellationPoint(0.10, 0.29), // Alioth
-        ConstellationPoint(0.06, 0.31), // Mizar
-        ConstellationPoint(0.02, 0.35), // Alkaid
+        ConstellationPoint(0.47, 0.45),
+        ConstellationPoint(0.49, 0.46),
+        ConstellationPoint(0.50, 0.48),
+        ConstellationPoint(0.48, 0.48),
+        ConstellationPoint(0.46, 0.49),
+        ConstellationPoint(0.44, 0.50),
+        ConstellationPoint(0.42, 0.52),
       ],
       lines: [
-        ConstellationLine(0, 1),
-        ConstellationLine(1, 2),
-        ConstellationLine(2, 3),
-        ConstellationLine(3, 0), // Box
-        ConstellationLine(3, 4), // Handle start
-        ConstellationLine(4, 5),
-        ConstellationLine(5, 6),
+        ConstellationLine(0,1),
+        ConstellationLine(1,2),
+        ConstellationLine(2,3),
+        ConstellationLine(3,0),
+        ConstellationLine(3,4),
+        ConstellationLine(4,5),
+        ConstellationLine(5,6),
       ],
     ),
   ];
+
 }

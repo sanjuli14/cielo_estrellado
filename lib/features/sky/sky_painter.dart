@@ -53,45 +53,61 @@ class NightSkyPainter extends CustomPainter {
   void _paintConstellations(Canvas canvas, Size size) {
     if (constellations.isEmpty) return;
 
+    final base = size.shortestSide;
+    final scale = base / 500;
+
     final linePaint = Paint()
       ..color = Colors.white.withOpacity(0.08)
-      ..strokeWidth = 0.4
+      ..strokeWidth = 0.25 * scale
       ..style = PaintingStyle.stroke;
 
     final starPaint = Paint()
       ..color = const Color(0xFFCAE5FF)
       ..style = PaintingStyle.fill;
-      
-    final glowPaint = Paint()
-      ..style = PaintingStyle.fill;
+
+    final glowPaint = Paint()..style = PaintingStyle.fill;
 
     for (final constellation in constellations) {
-       // Convert normalized points to screen coordinates
-       final screenPoints = constellation.points.map((pt) {
-         return Offset(pt.x * size.width, pt.y * size.height);
-       }).toList();
+      final screenPoints = constellation.points.map((pt) {
+        return Offset(pt.x * size.width, pt.y * size.height);
+      }).toList();
 
-       // Draw Lines
-       for (final line in constellation.lines) {
-         if (line.startIndex < screenPoints.length && line.endIndex < screenPoints.length) {
-            canvas.drawLine(screenPoints[line.startIndex], screenPoints[line.endIndex], linePaint);
-         }
-       }
+      // Lines
+      for (final line in constellation.lines) {
+        if (line.startIndex < screenPoints.length &&
+            line.endIndex < screenPoints.length) {
+          canvas.drawLine(
+            screenPoints[line.startIndex],
+            screenPoints[line.endIndex],
+            linePaint,
+          );
+        }
+      }
 
-       // Draw Stars
-       for (final point in screenPoints) {
-          // Glow
-          glowPaint.shader = RadialGradient(
-            colors: [
-              Colors.white.withOpacity(0.25),
-              Colors.transparent,
-            ],
-          ).createShader(Rect.fromCircle(center: point, radius: 3));
-          canvas.drawCircle(point, 3, glowPaint);
+      // Stars
+      for (final point in screenPoints) {
+        // Glow
+        glowPaint.shader = RadialGradient(
+          colors: [
+            Colors.white.withOpacity(0.18),
+            Colors.transparent,
+          ],
+        ).createShader(
+          Rect.fromCircle(
+            center: point,
+            radius: 2.0 * scale,
+          ),
+        );
 
-          // Core
-          canvas.drawCircle(point, 0.5, starPaint);
-       }
+        canvas.drawCircle(point, 2.0 * scale, glowPaint);
+
+        // Core
+        canvas.drawCircle(
+          point,
+          0.35 * scale,
+          starPaint,
+        );
+      }
     }
   }
 

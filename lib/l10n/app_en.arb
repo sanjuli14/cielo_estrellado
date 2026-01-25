@@ -1,0 +1,61 @@
+{
+  "@@locale": "en",
+  "appTitle": "Focus Night",
+  "splashEveryMinute": "Every Minute Matters",
+  "splashEveryStar": "Every Star Counts",
+  "homeActivateFocus": "Activate your Focus",
+  "homeLastSession": "Last session: {duration} min — {stars} stars",
+  "@homeLastSession": {
+    "placeholders": {
+      "duration": {},
+      "stars": {}
+    }
+  },
+  "homeSessionCompleted": "Session completed!",
+  "homeMinutesFocus": "{minutes} minutes of focus",
+  "@homeMinutesFocus": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "homeStarsGenerated": "{stars} stars generated",
+  "@homeStarsGenerated": {
+    "placeholders": {
+      "stars": {}
+    }
+  },
+  "homeShareText": "Today's sky is complete. Share it with friends",
+  "homeSwipeUpStats": "Swipe up to see statistics",
+  "homeMuteTooltip": "Mute music",
+  "homeUnmuteTooltip": "Unmute music",
+  "homeReminderTooltip": "Set daily reminder",
+  "homeReminderTitle": "It's time to see the stars",
+  "homeReminderBody": "Focus while you work, and generate a bright sky",
+  "homeReminderSet": "Daily reminder set at {time}",
+  "@homeReminderSet": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "homeReminderDenied": "Notification permissions denied",
+  "statsTitle": "Statistics",
+  "statsDailyHours": "Daily hours (last 7 days)",
+  "statsMonthlyStars": "Monthly stars",
+  "statsNoData": "No data available",
+  "statsError": "Error: {error}",
+  "@statsError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "statsUnitMin": "min",
+  "statsUnitStars": "stars",
+  "constellationUnlocked": "Unlocked at {stars} stars",
+  "@constellationUnlocked": {
+    "placeholders": {
+      "stars": {}
+    }
+  },
+  "notifChannelName": "Daily Reminders",
+  "notifChannelDesc": "Channel for application usage reminders"
+}

@@ -2,12 +2,14 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:cielo_estrellado/core/audio/audio_provider.dart';
 import 'package:cielo_estrellado/core/notifications/notification_service.dart';
 import 'package:cielo_estrellado/features/sky/constellation_provider.dart';
 import 'package:cielo_estrellado/features/sky/constellations.dart';
 import 'package:cielo_estrellado/features/sky/moon_phase_calculator.dart';
 import 'package:cielo_estrellado/features/sky/sky_painter.dart';
 import 'package:cielo_estrellado/features/timer/timer_controller.dart';
+import 'package:cielo_estrellado/l10n/app_localizations.dart';
 import 'package:cielo_estrellado/models/repositories/session_repositories.dart';
 import 'package:cielo_estrellado/models/sessions.dart';
 import 'package:cielo_estrellado/presentation/screen/stats/stats_screen.dart';
@@ -39,7 +41,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
 
     _twinkleController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 40),
+      duration: const Duration(seconds: 86400),
     )
       ..repeat();
 
@@ -79,6 +81,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     });
 
     _loadAndScheduleReminder();
+    _startBackgroundMusic();
+  }
+
+  void _startBackgroundMusic() {
+    // We use a small delay to ensure the audio service is ready
+    Future.microtask(() {
+      ref.read(audioServiceProvider).playBackgroundMusic('audio/background_music.mp3');
+    });
   }
 
   Future<void> _loadAndScheduleReminder() async {
@@ -88,10 +98,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
 
     if (hour != null && minute != null) {
       final time = TimeOfDay(hour: hour, minute: minute);
+      final l10n = AppLocalizations.of(context)!;
       await NotificationService().scheduleDailyNotification(
         id: 0,
-        title: 'Es hora de ver las estrellas',
-        body: 'Enfocate mientras trabajas, y genera un cielo brillante',
+        title: l10n.homeReminderTitle,
+        body: l10n.homeReminderBody,
         time: time,
       );
     }
@@ -156,7 +167,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       if (xfile == null) return;
       await Share.shareXFiles(
         [xfile],
-        text: 'Asi es mi cielo, consigue el tuyo aqui: https://sensational-belekoy-25572d.netlify.app/',
+        text: 'He terminado por hoy, este es mi cielo. Descargar App: https://sensational-belekoy-25572d.netlify.app/',
       );
     } finally {
       if (mounted) {
@@ -195,17 +206,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         await box.put('notif_hour', picked.hour);
         await box.put('notif_minute', picked.minute);
 
+        final l10n = AppLocalizations.of(context)!;
         await NotificationService().scheduleDailyNotification(
           id: 0,
-          title: 'Es hora de ver las estrellas',
-          body: 'Enfocate mientras trabajas, y genera un cielo brillante',
+          title: l10n.homeReminderTitle,
+          body: l10n.homeReminderBody,
           time: picked,
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Recordatorio diario programado a las ${picked.format(context)}',
+                l10n.homeReminderSet(picked.format(context)),
                 style: const TextStyle(color: Colors.black),
               ),
               backgroundColor: const Color(0xFFFFD1A4),
@@ -215,8 +227,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Permisos de notificación rechazados'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.homeReminderDenied),
             ),
           );
         }
@@ -234,6 +246,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     final moonPhaseEnum = MoonPhaseCalculator.getPhaseName(moonPhaseValue);
     final moonPhaseLabel = MoonPhaseCalculator.getMoonPhaseLabel(moonPhaseEnum);
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isSmallScreen = screenWidth < 360;
+
     final timeStyle = Theme
         .of(context)
         .textTheme
@@ -242,7 +258,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       fontWeight: FontWeight.bold,
       letterSpacing: 0.5,
       fontFamily: "Poppins",
-      fontSize: 64
+      fontSize: screenWidth * 0.16 // Responsive font size
     );
 
     final finishedStyle = Theme
@@ -252,6 +268,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         ?.copyWith(
       fontWeight: FontWeight.w700,
       letterSpacing: 0.6,
+      fontSize: screenWidth * 0.08, // Responsive font size
     );
 
     return Scaffold(
@@ -329,6 +346,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
             if (timer.isFinished)
               Center(
                 child: Container(
+                  width: screenWidth * 0.85, // Responsive width
                   padding: const EdgeInsets.symmetric(
                       horizontal: 24, vertical: 20),
                   decoration: BoxDecoration(
@@ -340,7 +358,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '¡Sesión completada!',
+                        AppLocalizations.of(context)!.homeSessionCompleted,
                         style: Theme
                             .of(context)
                             .textTheme
@@ -348,22 +366,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                             ?.copyWith(
                           color: Colors.white70,
                           fontWeight: FontWeight.w500,
+                          fontSize: isSmallScreen ? 14 : 16,
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Text(
-                        '${timer.elapsed.inMinutes} minutos de enfoque',
-                        style: finishedStyle?.copyWith(fontSize: 32),
-                        textAlign: TextAlign.center,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          AppLocalizations.of(context)!.homeMinutesFocus(timer.elapsed.inMinutes.toString()),
+                          style: finishedStyle,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '${(3200 * timer.skyProgress)
-                            .round()} estrellas generadas',
-                        style: const TextStyle(
-                          color: Color(0xFFFFD1A4),
+                        AppLocalizations.of(context)!.homeStarsGenerated((3200 * timer.skyProgress).round().toString()),
+                        style: TextStyle(
+                          color: const Color(0xFFFFD1A4),
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: isSmallScreen ? 14 : 16,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -373,11 +394,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                         color: Colors.white.withOpacity(0.2),
                       ),
                       const SizedBox(height: 16),
-                      const Text(
-                        'El cielo de hoy quedó completo. Compartelo con amigos',
+                      Text(
+                        AppLocalizations.of(context)!.homeShareText,
                         style: TextStyle(
                           color: Colors.white60,
-                          fontSize: 14,
+                          fontSize: isSmallScreen ? 12 : 14,
                           fontStyle: FontStyle.italic,
                         ),
                         textAlign: TextAlign.center,
@@ -401,32 +422,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                     }
 
                     return IgnorePointer(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Activa tu Enfoque',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 30,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.5,
-                              fontFamily: 'Poppins'
-                            ),
-                          ),
-                          if (lastSession != null) ...[
-                            const SizedBox(height: 8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
                             Text(
-                              'Última sesión: ${lastSession
-                                  .durationMinutes} min — ${lastSession
-                                  .starsGenerated} estrellas',
-                              style: const TextStyle(
-                                color: Colors.white54,
-                                fontSize: 14,
+                              AppLocalizations.of(context)!.homeActivateFocus,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: screenWidth * 0.08, // Responsive
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
+                                fontFamily: 'Poppins'
                               ),
                             ),
+                            if (lastSession != null) ...[
+                              const SizedBox(height: 8),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  AppLocalizations.of(context)!.homeLastSession(
+                                    lastSession.durationMinutes.toString(),
+                                    lastSession.starsGenerated.toString(),
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     );
                   },
@@ -442,7 +471,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                   child: IconButton(
                     icon: const Icon(Icons.notifications_active_outlined, color: Colors.white38),
                     onPressed: _setupReminder,
-                    tooltip: 'Configurar recordatorio diario',
+                    tooltip: AppLocalizations.of(context)!.homeReminderTooltip,
+                  ),
+                ),
+              ),
+
+            if (!timer.isFinished)
+              Positioned(
+                top: 24,
+                right: 16,
+                child: SafeArea(
+                  child: Consumer(
+                    builder: (context, ref, child) {
+                      final audioService = ref.watch(audioServiceProvider);
+                      return IconButton(
+                        icon: Icon(
+                          audioService.isMuted ? Icons.volume_off_outlined : Icons.volume_up_outlined,
+                          color: Colors.white38,
+                        ),
+                        onPressed: () {
+                          audioService.toggleMute();
+                          setState(() {}); // Refresh to update icon
+                        },
+                        tooltip: audioService.isMuted 
+                            ? AppLocalizations.of(context)!.homeUnmuteTooltip 
+                            : AppLocalizations.of(context)!.homeMuteTooltip,
+                      );
+                    },
                   ),
                 ),
               ),
@@ -462,11 +517,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            _formatDuration(timer.elapsed),
-                            style: timer.isRunning ? const TextStyle(
-                                fontSize: 10, fontFamily: 'Poppins', fontWeight: FontWeight.bold
-                            ) : timeStyle
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              _formatDuration(timer.elapsed),
+                              style: timer.isRunning ? const TextStyle(
+                                  fontSize: 10, fontFamily: 'Poppins', fontWeight: FontWeight.bold
+                              ) : timeStyle
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -486,16 +544,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                 ),
               ),
             if(timer.isRunning == false)
-              const Positioned(
-                bottom: 120,
-                right: 45,
+              Positioned(
+                bottom: screenHeight * 0.15, // Responsive position
+                right: 0,
+                left: 0,
                 child: IgnorePointer(
+                child: Center(
                   child: Text(
-                    'Desliza hacia arriba para ver estadisticas',
-                    style: TextStyle(
-                        fontFamily: "Poppins"
+                    AppLocalizations.of(context)!.homeSwipeUpStats,
+                    style: const TextStyle(
+                        fontFamily: "Poppins",
+                        color: Colors.white38,
+                        fontSize: 12,
                     ),
                   ),
+                ),
                 ),
               ),
 
@@ -510,24 +573,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                     IconButton(
                       onPressed: controller.toggle,
                       icon: const Icon(Icons.play_arrow_rounded),
-                      iconSize: 34,
+                      iconSize: isSmallScreen ? 28 : 34,
                       style: IconButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: Colors.white.withOpacity(0.10),
                         shape: const CircleBorder(),
-                        padding: const EdgeInsets.all(18),
+                        padding: EdgeInsets.all(isSmallScreen ? 14 : 18),
                       ),
                     ),
                     const SizedBox(width: 14),
                     IconButton(
                       onPressed: _isSharing ? null : _shareSky,
                       icon: const Icon(Icons.ios_share_rounded),
-                      iconSize: 26,
+                      iconSize: isSmallScreen ? 22 : 26,
                       style: IconButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: Colors.white.withOpacity(0.10),
                         shape: const CircleBorder(),
-                        padding: const EdgeInsets.all(18),
+                        padding: EdgeInsets.all(isSmallScreen ? 14 : 18),
                       ),
                     ),
                   ],
@@ -538,12 +601,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                     timer.isRunning ? Icons.pause_rounded : Icons
                         .play_arrow_rounded,
                   ),
-                  iconSize: 34,
+                  iconSize: isSmallScreen ? 28 : 34,
                   style: IconButton.styleFrom(
                     foregroundColor: Colors.white,
                     backgroundColor: Colors.white.withOpacity(0.10),
                     shape: const CircleBorder(),
-                    padding: const EdgeInsets.all(18),
+                    padding: EdgeInsets.all(isSmallScreen ? 14 : 18),
                   ),
                 ),
               ),
@@ -594,7 +657,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               ),
               const SizedBox(height: 8),
               Text(
-                'Desbloqueada a las ${c.starsRequired} estrellas',
+                AppLocalizations.of(context)!.constellationUnlocked(c.starsRequired.toString()),
                 style: const TextStyle(
                   color: Colors.amber,
                   fontWeight: FontWeight.w600,

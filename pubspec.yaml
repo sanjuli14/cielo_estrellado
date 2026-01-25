@@ -41,10 +41,14 @@ dependencies:
   path_provider: ^2.1.5
   share_plus: ^10.1.4
   fl_chart: ^0.66.0
-  intl: ^0.19.0
+  intl: ^0.20.2
   flutter_local_notifications: ^19.0.0
   timezone: ^0.10.1
   flutter_timezone: ^5.0.1
+  audioplayers: ^5.2.1
+  flutter_svg: ^2.0.10+1
+  flutter_localizations:
+    sdk: flutter
 
 
 dev_dependencies:
@@ -74,6 +78,7 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  generate: true
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -122,14 +127,15 @@ flutter:
 
   assets:
     - assets/icon/
+    - assets/audio/
 
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icon/icono.png"
+  image_path: "assets/icon/iconor.png"
   adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/icon/icono.png"
+  adaptive_icon_foreground: "assets/icon/iconor.png"
   remove_alpha_ios: true
 
 #flutter_native_splash:
