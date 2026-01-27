@@ -61,13 +61,13 @@ class NightSkyPainter extends CustomPainter {
     final scale = base / 500;
 
     final linePaint = Paint()
-      ..color = Colors.white.withOpacity(0.08)
-      ..strokeWidth = 0.45 * scale
+      ..color = Colors.white
+      ..strokeWidth = 0.08 * scale
       ..style = PaintingStyle.stroke;
 
     final starPaint = Paint()
       ..color = const Color(0xFFCAE5FF)
-      ..style = PaintingStyle.fill;
+      ..style = PaintingStyle.stroke;
 
     final glowPaint = Paint()..style = PaintingStyle.fill;
 
