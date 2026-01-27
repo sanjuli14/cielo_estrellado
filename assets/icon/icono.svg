@@ -1,0 +1,77 @@
+<svg
+  width="512"
+  height="512"
+  viewBox="0 0 512 512"
+  xmlns="http://www.w3.org/2000/svg"
+>
+
+  <!-- Gradiente opcional para la luna -->
+  <defs>
+    <linearGradient id="moonGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e6e6e6"/>
+    </linearGradient>
+
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Luna -->
+  <path
+    d="
+      M 256 80
+      A 180 180 0 1 0 256 432
+      A 140 180 0 1 1 256 80
+    "
+    fill="url(#moonGradient)"
+    filter="url(#glow)"
+  />
+
+  <!-- Estrellas pequeñas -->
+  <g fill="#FFD966">
+
+    <circle cx="360" cy="140" r="4"/>
+    <circle cx="390" cy="170" r="3"/>
+    <circle cx="410" cy="210" r="2.5"/>
+    <circle cx="400" cy="250" r="3"/>
+    <circle cx="370" cy="290" r="3.5"/>
+    <circle cx="330" cy="320" r="2.5"/>
+
+    <circle cx="300" cy="340" r="2"/>
+    <circle cx="350" cy="200" r="2"/>
+    <circle cx="380" cy="230" r="2"/>
+
+  </g>
+
+  <!-- Estrellas grandes -->
+  <g fill="#FFF3B0">
+
+    <polygon
+      points="140,170 146,190 166,196 146,202 140,222 134,202 114,196 134,190"
+    />
+
+    <polygon
+      points="350,330 356,350 376,356 356,362 350,382 344,362 324,356 344,350"
+    />
+
+  </g>
+
+  <!-- Reloj digital -->
+  <text
+    x="256"
+    y="270"
+    text-anchor="middle"
+    font-size="72"
+    font-family="monospace"
+    fill="white"
+    filter="url(#glow)"
+  >
+    00:25
+  </text>
+
+</svg>

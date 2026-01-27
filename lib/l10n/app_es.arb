@@ -1,0 +1,61 @@
+{
+  "@@locale": "es",
+  "appTitle": "Focus Night",
+  "splashEveryMinute": "Cada Minuto Importa",
+  "splashEveryStar": "Cada Estrella Cuenta",
+  "homeActivateFocus": "Activa tu Enfoque",
+  "homeLastSession": "Última sesión: {duration} min — {stars} estrellas",
+  "@homeLastSession": {
+    "placeholders": {
+      "duration": {},
+      "stars": {}
+    }
+  },
+  "homeSessionCompleted": "¡Sesión completada!",
+  "homeMinutesFocus": "{minutes} minutos de enfoque",
+  "@homeMinutesFocus": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "homeStarsGenerated": "{stars} estrellas generadas",
+  "@homeStarsGenerated": {
+    "placeholders": {
+      "stars": {}
+    }
+  },
+  "homeShareText": "El cielo de hoy quedó completo. Compartelo con amigos",
+  "homeSwipeUpStats": "Desliza hacia arriba para ver estadisticas",
+  "homeMuteTooltip": "Silenciar música",
+  "homeUnmuteTooltip": "Activar música",
+  "homeReminderTooltip": "Configurar recordatorio diario",
+  "homeReminderTitle": "Es hora de ver las estrellas",
+  "homeReminderBody": "Enfocate mientras trabajas, y genera un cielo brillante",
+  "homeReminderSet": "Recordatorio diario programado a las {time}",
+  "@homeReminderSet": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "homeReminderDenied": "Permisos de notificación rechazados",
+  "statsTitle": "Estadísticas",
+  "statsDailyHours": "Horas diarias (últimos 7 días)",
+  "statsMonthlyStars": "Estrellas mensuales",
+  "statsNoData": "No hay datos disponibles",
+  "statsError": "Error: {error}",
+  "@statsError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "statsUnitMin": "min",
+  "statsUnitStars": "estrellas",
+  "constellationUnlocked": "Desbloqueada a las {stars} estrellas",
+  "@constellationUnlocked": {
+    "placeholders": {
+      "stars": {}
+    }
+  },
+  "notifChannelName": "Recordatorios Diarios",
+  "notifChannelDesc": "Canal para recordatorios de uso de la aplicación"
+}
