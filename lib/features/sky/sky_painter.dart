@@ -61,13 +61,14 @@ class NightSkyPainter extends CustomPainter {
     final scale = base / 500;
 
     final linePaint = Paint()
-      ..color = Colors.white.withOpacity(0.08)
-      ..strokeWidth = 0.45 * scale
+      ..color = Colors.white
+      ..strokeWidth = 0.08 * scale
       ..style = PaintingStyle.stroke;
 
     final starPaint = Paint()
       ..color = const Color(0xFFCAE5FF)
-      ..style = PaintingStyle.fill;
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
 
     final glowPaint = Paint()..style = PaintingStyle.fill;
 
@@ -108,7 +109,7 @@ class NightSkyPainter extends CustomPainter {
         // Core
         canvas.drawCircle(
           point,
-          0.35 * scale,
+          0.20 * scale,
           starPaint,
         );
       }
@@ -222,7 +223,7 @@ class NightSkyPainter extends CustomPainter {
       final color = _pickStarColor(rnd);
       dustPaint
         ..color = color.withAlpha(alpha)
-        ..strokeWidth = 0.4 + rnd.nextDouble() * 0.9;
+        ..strokeWidth = 0.2 + rnd.nextDouble() * 0.5;
 
       canvas.drawPoints(ui.PointMode.points, [Offset(px, py)], dustPaint);
     }
@@ -263,7 +264,7 @@ class NightSkyPainter extends CustomPainter {
       // Subtle blinking, not fully disappearing
       final twinkleFactor = 0.8 + (wave * 0.3);
 
-      final radius = (0.22 + intensity * 1.35) * twinkleFactor;
+      final radius = (0.15 + intensity * 1.05) * twinkleFactor;
       final baseAlpha = 15 + (intensity * 230);
       final alpha = (baseAlpha * twinkleFactor).round().clamp(0, 255);
 
