@@ -31,9 +31,10 @@ class WorkTimerState {
     );
   }
 
-  double get skyProgress {
-    final t = elapsed.inSeconds.toDouble().clamp(0, 1e9);
-    return (1 - math.exp(-t / 900)).clamp(0.0, 1.0);
+  int get sessionStars {
+    // Generates 3 stars per second focuses on a linear, "automatic" feeling.
+    // At 45 min (2700s) -> ~8100 stars. At 2 hours -> ~21600 stars.
+    return (elapsed.inSeconds * 3);
   }
 
   WorkTimerState copyWith({

@@ -97,7 +97,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 return CustomPaint(
                   painter: NightSkyPainter(
                     seed: 42,
-                    progress: _skyAnimation.value,
+                    starCount: (_skyAnimation.value * 2000).round(),
+                    baseStars: 1000,
                     twinkleValue: 0,
                   ),
                 );

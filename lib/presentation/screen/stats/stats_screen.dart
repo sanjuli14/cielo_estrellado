@@ -1,4 +1,6 @@
 
+import 'package:cielo_estrellado/features/sky/constellation_provider.dart';
+import 'package:cielo_estrellado/features/sky/constellations.dart';
 import 'package:cielo_estrellado/features/stats/stats_providers.dart';
 import 'package:cielo_estrellado/models/month_stats.dart';
 import 'package:cielo_estrellado/models/period_summary.dart';
@@ -35,6 +37,8 @@ class StatsScreen extends ConsumerWidget {
             _DailyHoursSection(data: weekly),
             const SizedBox(height: 24),
             _MonthlyStarsSection(data: monthlyStars),
+            const SizedBox(height: 24),
+            const _ConstellationsCatalogSection(),
           ],
         ),
       ),
@@ -372,5 +376,157 @@ class _MonthlyStarsChart extends StatelessWidget {
     }
     // Add buffer
     return max + (max * 0.2).ceil() + 5; 
+  }
+}
+
+class _ConstellationsCatalogSection extends ConsumerWidget {
+  const _ConstellationsCatalogSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final totalStarsAsync = ref.watch(totalStarsProvider);
+    final unlockedAsync = ref.watch(unlockedConstellationsProvider);
+    final allConstellations = Constellation.all;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF060816).withOpacity(0.65),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withOpacity(0.10)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Catálogo de Constelaciones",
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: MediaQuery.of(context).size.width * 0.045,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              totalStarsAsync.when(
+                data: (total) => Text(
+                  "$total ★",
+                  style: const TextStyle(
+                    color: Colors.amber,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          unlockedAsync.when(
+            data: (unlocked) {
+              return ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: allConstellations.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final constellation = allConstellations[index];
+                  final isUnlocked = unlocked.any((c) => c.id == constellation.id);
+                  
+                  return _ConstellationItem(
+                    constellation: constellation,
+                    isUnlocked: isUnlocked,
+                  );
+                },
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, __) => Text("Error: $e"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConstellationItem extends StatelessWidget {
+  final Constellation constellation;
+  final bool isUnlocked;
+
+  const _ConstellationItem({
+    required this.constellation,
+    required this.isUnlocked,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 500),
+      opacity: isUnlocked ? 1.0 : 0.4,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isUnlocked 
+              ? Colors.white.withOpacity(0.05) 
+              : Colors.black.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isUnlocked 
+                ? Colors.amber.withOpacity(0.3) 
+                : Colors.white.withOpacity(0.05),
+            width: isUnlocked ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: isUnlocked ? Colors.amber.withOpacity(0.1) : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Icon(
+                  isUnlocked ? Icons.auto_awesome : Icons.lock_outline,
+                  color: isUnlocked ? Colors.amber : Colors.white24,
+                  size: 24,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    constellation.name,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: isUnlocked ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isUnlocked ? "¡Desbloqueada!" : "Requiere ${constellation.starsRequired} estrellas",
+                    style: TextStyle(
+                      color: isUnlocked ? Colors.amber : Colors.white38,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isUnlocked)
+              const Icon(
+                Icons.check_circle,
+                color: Colors.amber,
+                size: 20,
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }

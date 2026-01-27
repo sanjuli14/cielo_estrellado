@@ -58,7 +58,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         final endedAt = next.endedAt;
         if (startedAt == null || endedAt == null) return;
 
-        final starsGenerated = (3200 * next.skyProgress).round();
+        final starsGenerated = next.sessionStars;
         final session = Session(
           id: endedAt.millisecondsSinceEpoch,
           startTime: startedAt,
@@ -241,6 +241,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     final timer = ref.watch(workTimerProvider);
     final controller = ref.read(workTimerProvider.notifier);
     final constellationsAsync = ref.watch(unlockedConstellationsProvider);
+    final totalStarsAsync = ref.watch(totalStarsProvider);
+    final totalStars = totalStarsAsync.asData?.value ?? 0;
 
     final moonPhaseValue = MoonPhaseCalculator.getMoonPhase(DateTime.now());
     final moonPhaseEnum = MoonPhaseCalculator.getPhaseName(moonPhaseValue);
@@ -333,7 +335,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       child: CustomPaint(
                         painter: NightSkyPainter(
                           seed: timer.skySeed,
-                          progress: timer.skyProgress,
+                          starCount: timer.sessionStars,
+                          baseStars: totalStars,
                           twinkleValue: _twinkleController.value,
                           constellations: constellationsAsync.asData?.value ??
                               [],
@@ -380,7 +383,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        AppLocalizations.of(context)!.homeStarsGenerated((3200 * timer.skyProgress).round().toString()),
+                        AppLocalizations.of(context)!.homeStarsGenerated(timer.sessionStars.toString()),
                         style: TextStyle(
                           color: const Color(0xFFFFD1A4),
                           fontWeight: FontWeight.bold,

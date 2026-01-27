@@ -6,13 +6,15 @@ import 'package:flutter/material.dart';
 
 class NightSkyPainter extends CustomPainter {
   final int seed;
-  final double progress;
+  final int starCount;
+  final int baseStars;
   final double twinkleValue; // 0.0 to 1.0
   final List<Constellation> constellations;
 
   NightSkyPainter({
     required this.seed,
-    required this.progress,
+    required this.starCount,
+    this.baseStars = 0,
     this.twinkleValue = 0.0,
     this.constellations = const [],
   });
@@ -29,7 +31,9 @@ class NightSkyPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final p = progress.clamp(0.0, 1.0);
+    // Milky Way gets stronger as you gather stars in the session.
+    // Reaches full intensity at 3000 stars (~15 min).
+    final mwStrength = (starCount / 3000).clamp(0.0, 1.0);
 
     final bgPaint = Paint()
       ..shader = const LinearGradient(
@@ -44,8 +48,8 @@ class NightSkyPainter extends CustomPainter {
 
     canvas.drawRect(Offset.zero & size, bgPaint);
 
-    _paintMilkyWayDust(canvas, size, p);
-    _paintStars(canvas, size, p);
+    _paintMilkyWayDust(canvas, size, mwStrength);
+    _paintStars(canvas, size);
     _paintConstellations(canvas, size);
     _paintVignette(canvas, size);
   }
@@ -58,7 +62,7 @@ class NightSkyPainter extends CustomPainter {
 
     final linePaint = Paint()
       ..color = Colors.white.withOpacity(0.08)
-      ..strokeWidth = 0.25 * scale
+      ..strokeWidth = 0.45 * scale
       ..style = PaintingStyle.stroke;
 
     final starPaint = Paint()
@@ -194,7 +198,7 @@ class NightSkyPainter extends CustomPainter {
       canvas.drawCircle(Offset(px, py), r, lanePaint);
     }
 
-    final dustCount = (9000 * strength).round().clamp(0, 9000);
+    final dustCount = (12000 * strength).round().clamp(0, 12000);
     final dustPaint = Paint()
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
@@ -224,11 +228,17 @@ class NightSkyPainter extends CustomPainter {
     }
   }
 
-  void _paintStars(Canvas canvas, Size size, double p) {
+  void _paintStars(Canvas canvas, Size size) {
     final rnd = math.Random(seed);
 
-    final maxStars = ((size.width * size.height) / 1100).round().clamp(1200, 3200);
-    final count = (maxStars * p).round().clamp(0, maxStars);
+    // Automatic generation: base stars (from history) + current session stars.
+    // We only render 1% of base stars to avoid overcrowding, ensuring the sky grows forever
+    // but remains visually balanced.
+    final baseLayer = (baseStars * 0.01).round();
+    final totalToRender = baseLayer + starCount;
+
+    // Safety cap for performance (20,000 points is usually safe for 60fps)
+    final count = totalToRender.clamp(0, 20000);
 
     final smallPaint = Paint()
       ..strokeCap = StrokeCap.round
@@ -253,8 +263,8 @@ class NightSkyPainter extends CustomPainter {
       // Subtle blinking, not fully disappearing
       final twinkleFactor = 0.8 + (wave * 0.3);
 
-      final radius = (0.18 + intensity * 1.10) * twinkleFactor;
-      final baseAlpha = 10 + (intensity * 215);
+      final radius = (0.22 + intensity * 1.35) * twinkleFactor;
+      final baseAlpha = 15 + (intensity * 230);
       final alpha = (baseAlpha * twinkleFactor).round().clamp(0, 255);
 
       smallPaint
@@ -268,7 +278,8 @@ class NightSkyPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant NightSkyPainter oldDelegate) {
     return oldDelegate.seed != seed || 
-           oldDelegate.progress != progress ||
+           oldDelegate.starCount != starCount ||
+           oldDelegate.baseStars != baseStars ||
            oldDelegate.twinkleValue != twinkleValue ||
            oldDelegate.constellations != constellations;
   }
