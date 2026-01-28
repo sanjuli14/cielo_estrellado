@@ -65,6 +65,45 @@ class StatsAggregator {
      return map.values.toList()..sort((a,b) => a.month.compareTo(b.month));
   }
 
+  int calculateCurrentStreak(List<Session> sessions, {DateTime? now}) {
+    if (sessions.isEmpty) return 0;
+
+    final n = now ?? DateTime.now();
+    final today = _dayKey(n);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    // Get all unique days with sessions, sorted descending
+    final uniqueDays = sessions
+        .map((s) => _dayKey(s.startTime))
+        .toSet()
+        .toList()
+      ..sort((a, b) => b.compareTo(a));
+
+    if (uniqueDays.isEmpty) return 0;
+
+    // Check if the most recent session is today or yesterday.
+    // If the last session was before yesterday, streak is broken -> 0.
+    final lastActiveKey = uniqueDays.first;
+    if (lastActiveKey.isBefore(yesterday)) {
+      return 0;
+    }
+
+    int streak = 0;
+    DateTime currentCheck = lastActiveKey;
+
+    for (final day in uniqueDays) {
+      if (day.isAtSameMomentAs(currentCheck)) {
+        streak++;
+        currentCheck = currentCheck.subtract(const Duration(days: 1));
+      } else {
+        // Gap found
+        break;
+      }
+    }
+
+    return streak;
+  }
+
   PeriodSummary _summaryForRange(
     List<Session> sessions, {
     required DateTime start,
