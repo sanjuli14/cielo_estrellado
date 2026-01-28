@@ -167,7 +167,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       if (xfile == null) return;
       await Share.shareXFiles(
         [xfile],
-        text: 'He terminado por hoy, este es mi cielo. Descargar App: https://sensational-belekoy-25572d.netlify.app/',
+        text: 'Revisa este enlace para saber más: https://focusnight.netlify.app/',
       );
     } finally {
       if (mounted) {
