@@ -1,4 +1,6 @@
 import 'package:cielo_estrellado/models/day_stats.dart';
+import 'package:cielo_estrellado/models/goal.dart';
+import 'package:cielo_estrellado/models/goal_type.dart';
 import 'package:cielo_estrellado/models/period_summary.dart';
 import 'package:cielo_estrellado/models/sessions.dart';
 import 'package:cielo_estrellado/presentation/screen/home/home_screen.dart';
@@ -25,6 +27,8 @@ void main() async {
   Hive.registerAdapter(SessionAdapter());
   Hive.registerAdapter(DayStatAdapter());
   Hive.registerAdapter(PeriodSummaryAdapter());
+  Hive.registerAdapter(GoalAdapter());
+  Hive.registerAdapter(GoalTypeAdapter());
   await Hive.openBox<Session>('sessions');
 
   runApp(const ProviderScope(child: NightTimerApp()));
