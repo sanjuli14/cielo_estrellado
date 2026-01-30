@@ -14,6 +14,7 @@ import 'package:cielo_estrellado/models/repositories/session_repositories.dart';
 import 'package:cielo_estrellado/models/sessions.dart';
 import 'package:cielo_estrellado/features/stats/stats_providers.dart';
 import 'package:cielo_estrellado/presentation/screen/home/share_card.dart';
+import 'package:cielo_estrellado/presentation/screen/settings/settings_screen.dart';
 import 'package:cielo_estrellado/presentation/screen/stats/stats_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -493,38 +494,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                 left: 16,
                 child: SafeArea(
                   child: IconButton(
-                    icon: const Icon(Icons.notifications_active_outlined, color: Colors.white38),
-                    onPressed: _setupReminder,
-                    tooltip: AppLocalizations.of(context)!.homeReminderTooltip,
+                    icon: const Icon(Icons.settings_outlined, color: Colors.white38),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const SettingsScreen(),
+                        ),
+                      );
+                    },
+                    tooltip: 'Configuración',
                   ),
                 ),
               ),
 
-            if (!timer.isFinished)
-              Positioned(
-                top: 24,
-                right: 16,
-                child: SafeArea(
-                  child: Consumer(
-                    builder: (context, ref, child) {
-                      final audioService = ref.watch(audioServiceProvider);
-                      return IconButton(
-                        icon: Icon(
-                          audioService.isMuted ? Icons.volume_off_outlined : Icons.volume_up_outlined,
-                          color: Colors.white38,
-                        ),
-                        onPressed: () {
-                          audioService.toggleMute();
-                          setState(() {}); // Refresh to update icon
-                        },
-                        tooltip: audioService.isMuted 
-                            ? AppLocalizations.of(context)!.homeUnmuteTooltip 
-                            : AppLocalizations.of(context)!.homeMuteTooltip,
-                      );
-                    },
-                  ),
-                ),
-              ),
 
             if (!timer.isFinished)
               Align(
