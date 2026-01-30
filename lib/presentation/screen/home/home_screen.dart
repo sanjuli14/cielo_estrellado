@@ -12,6 +12,9 @@ import 'package:cielo_estrellado/features/timer/timer_controller.dart';
 import 'package:cielo_estrellado/l10n/app_localizations.dart';
 import 'package:cielo_estrellado/models/repositories/session_repositories.dart';
 import 'package:cielo_estrellado/models/sessions.dart';
+import 'package:cielo_estrellado/features/stats/stats_providers.dart';
+import 'package:cielo_estrellado/presentation/screen/home/share_card.dart';
+import 'package:cielo_estrellado/presentation/screen/settings/settings_screen.dart';
 import 'package:cielo_estrellado/presentation/screen/stats/stats_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -29,6 +32,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
   final GlobalKey _skyBoundaryKey = GlobalKey();
+  final GlobalKey _shareCardKey = GlobalKey(); 
   bool _savedSessionForThisRun = false;
   bool _isSharing = false;
 
@@ -133,26 +137,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
 
 
   Future<XFile?> _captureSky() async {
-    final context = _skyBoundaryKey.currentContext;
-    if (context == null) return null;
+    // 1. Ensure the card is rendered (it's in the tree, but might need a frame to settle if just added, 
+    // but here it's persistent in the Stack so it should be ready).
+    
+    final context = _shareCardKey.currentContext;
+    if (context == null) {
+      print('❌ ShareCard context is null');
+      return null;
+    }
 
+    // 2. Capture
     final boundary = context.findRenderObject() as RenderRepaintBoundary?;
-    if (boundary == null) return null;
+    if (boundary == null) {
+      print('❌ RenderRepaintBoundary is null');
+      return null;
+    }
 
-    final pixelRatio = MediaQuery
-        .of(this.context)
-        .devicePixelRatio;
-    final image = await boundary.toImage(pixelRatio: pixelRatio);
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    if (bytes == null) return null;
+    // Use specific pixel ratio 3.0 for high quality but not huge memory usage
+    // Card is 1080px wide logically, so 1.0 is enough? 
+    // Wait, the container is 1080 logical pixels. 
+    // To get a 1080px wide image, pixelRatio should be 1.0.
+    // To get higher quality, we can go higher, but 1080x1350 is already "high res".
+    // Let's use 2.0 to be safe and crisp (2160x2700).
+    const double pixelRatio = 2.0; 
+    
+    try {
+      final image = await boundary.toImage(pixelRatio: pixelRatio);
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (bytes == null) return null;
 
-    final dir = await getTemporaryDirectory();
-    final path = '${dir.path}/night_sky_${DateTime
-        .now()
-        .millisecondsSinceEpoch}.png';
-    final file = File(path);
-    await file.writeAsBytes(bytes.buffer.asUint8List());
-    return XFile(file.path);
+      final dir = await getTemporaryDirectory();
+      final path = '${dir.path}/focus_night_card_${DateTime.now().millisecondsSinceEpoch}.png';
+      final file = File(path);
+      await file.writeAsBytes(bytes.buffer.asUint8List());
+      return XFile(file.path);
+    } catch (e) {
+      print('❌ Error capturing card: $e');
+      return null;
+    }
   }
 
   Future<void> _shareSky() async {
@@ -167,7 +189,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       if (xfile == null) return;
       await Share.shareXFiles(
         [xfile],
-        text: 'He terminado por hoy, este es mi cielo. Descargar App: https://sensational-belekoy-25572d.netlify.app/',
+        text: 'Revisa este enlace para descargar la aplicación: https://focusnight.netlify.app/',
       );
     } finally {
       if (mounted) {
@@ -472,38 +494,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                 left: 16,
                 child: SafeArea(
                   child: IconButton(
-                    icon: const Icon(Icons.notifications_active_outlined, color: Colors.white38),
-                    onPressed: _setupReminder,
-                    tooltip: AppLocalizations.of(context)!.homeReminderTooltip,
+                    icon: const Icon(Icons.settings_outlined, color: Colors.white38),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const SettingsScreen(),
+                        ),
+                      );
+                    },
+                    tooltip: 'Configuración',
                   ),
                 ),
               ),
 
-            if (!timer.isFinished)
-              Positioned(
-                top: 24,
-                right: 16,
-                child: SafeArea(
-                  child: Consumer(
-                    builder: (context, ref, child) {
-                      final audioService = ref.watch(audioServiceProvider);
-                      return IconButton(
-                        icon: Icon(
-                          audioService.isMuted ? Icons.volume_off_outlined : Icons.volume_up_outlined,
-                          color: Colors.white38,
-                        ),
-                        onPressed: () {
-                          audioService.toggleMute();
-                          setState(() {}); // Refresh to update icon
-                        },
-                        tooltip: audioService.isMuted 
-                            ? AppLocalizations.of(context)!.homeUnmuteTooltip 
-                            : AppLocalizations.of(context)!.homeMuteTooltip,
-                      );
-                    },
-                  ),
-                ),
-              ),
 
             if (!timer.isFinished)
               Align(
@@ -626,6 +629,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                   ),
                 ),
               ),
+            
+            // --- OFF SCREEN SHARE CARD ---
+            // We place it in a Transform.translate to move it off-screen 
+            // but keep it active in the tree for RepaintBoundary to work.
+            Transform.translate(
+              offset: const Offset(-2000, -2000), // Far away
+              child: RepaintBoundary(
+                key: _shareCardKey,
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final timer = ref.watch(workTimerProvider);
+                    final totalStars = ref.watch(totalStarsProvider).asData?.value ?? 0;
+                    final constellations = ref.watch(unlockedConstellationsProvider).asData?.value ?? [];
+                    final sessionStars = timer.sessionStars;
+                    
+                    // Get streak
+                    final sessions = ref.watch(sessionsStreamProvider).asData?.value ?? [];
+                    final streak = ref.watch(statsAggregatorProvider).calculateCurrentStreak(sessions);
+
+                    // If timer is running/finished, use its duration. 
+                    // But normally we share AFTER finish.
+                    final duration = timer.elapsed.inMinutes;
+
+                    return ShareCard(
+                      seed: timer.skySeed,
+                      starCount: sessionStars,
+                      baseStars: totalStars,
+                      twinkleValue: _twinkleController.value,
+                      constellations: constellations,
+                      sessionStars: sessionStars,
+                      sessionDuration: duration,
+                      streakDays: streak,
+                      date: DateTime.now(),
+                    );
+                  },
+                ),
+              ),
+            ),
           ],
         ),
       ),

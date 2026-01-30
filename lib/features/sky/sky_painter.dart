@@ -60,21 +60,35 @@ class NightSkyPainter extends CustomPainter {
     final base = size.shortestSide;
     final scale = base / 500;
 
+    // Thin but bright lines
     final linePaint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 0.08 * scale
+      ..color = Colors.white.withOpacity(0.9)
+      ..strokeWidth = 0.15 * scale  // Thin lines
       ..style = PaintingStyle.stroke;
 
+    // Small but bright constellation stars
     final starPaint = Paint()
-      ..color = const Color(0xFFCAE5FF)
-      ..strokeWidth = 1.5
+      ..color = const Color(0xFFFFFFFF).withOpacity(0.8)  // Pure white for maximum brightness
+      ..strokeWidth = 0.02 * scale  // Small but visible stars
       ..style = PaintingStyle.stroke;
 
     final glowPaint = Paint()..style = PaintingStyle.fill;
 
     for (final constellation in constellations) {
+      // Scale down constellations to be more compact
+      // Instead of using full screen coordinates, scale them to ~15% of screen size
+      const constellationScale = 0.40;
+      
       final screenPoints = constellation.points.map((pt) {
-        return Offset(pt.x * size.width, pt.y * size.height);
+        // Calculate center of constellation
+        final centerX = constellation.points.fold(0.0, (sum, p) => sum + p.x) / constellation.points.length;
+        final centerY = constellation.points.fold(0.0, (sum, p) => sum + p.y) / constellation.points.length;
+        
+        // Scale points relative to center
+        final scaledX = centerX + (pt.x - centerX) * constellationScale;
+        final scaledY = centerY + (pt.y - centerY) * constellationScale;
+        
+        return Offset(scaledX * size.width, scaledY * size.height);
       }).toList();
 
       // Lines
@@ -89,27 +103,42 @@ class NightSkyPainter extends CustomPainter {
         }
       }
 
-      // Stars
+      // Stars with intense multi-layer glow
       for (final point in screenPoints) {
-        // Glow
+        // Outer glow layer (large, subtle)
         glowPaint.shader = RadialGradient(
           colors: [
-            Colors.white.withOpacity(0.18),
+            Colors.white.withOpacity(0.3),
+            Colors.white.withOpacity(0.1),
             Colors.transparent,
           ],
         ).createShader(
           Rect.fromCircle(
             center: point,
-            radius: 2.0 * scale,
+            radius: 8.0 * scale,  // Large glow radius
           ),
         );
+        canvas.drawCircle(point, 8.0 * scale, glowPaint);
 
-        canvas.drawCircle(point, 2.0 * scale, glowPaint);
+        // Inner bright glow
+        glowPaint.shader = RadialGradient(
+          colors: [
+            Colors.white.withOpacity(0.8),  // Very bright center
+            Colors.white.withOpacity(0.4),
+            Colors.transparent,
+          ],
+        ).createShader(
+          Rect.fromCircle(
+            center: point,
+            radius: 3.0 * scale,
+          ),
+        );
+        canvas.drawCircle(point, 3.0 * scale, glowPaint);
 
-        // Core
+        // Core star (small but bright)
         canvas.drawCircle(
           point,
-          0.20 * scale,
+          0.5 * scale,  // Small core
           starPaint,
         );
       }
