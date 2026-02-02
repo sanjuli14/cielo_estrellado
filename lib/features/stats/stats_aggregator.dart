@@ -104,6 +104,36 @@ class StatsAggregator {
     return streak;
   }
 
+  int calculateBestStreak(List<Session> sessions) {
+    if (sessions.isEmpty) return 0;
+
+    // Get all unique days with sessions, sorted ascending
+    final uniqueDays = sessions
+        .map((s) => _dayKey(s.startTime))
+        .toSet()
+        .toList()
+      ..sort((a, b) => a.compareTo(b));
+
+    if (uniqueDays.isEmpty) return 0;
+
+    int maxStreak = 0;
+    int currentStreak = 0;
+    DateTime? expectedDay;
+
+    for (final day in uniqueDays) {
+      if (expectedDay == null || day.isAtSameMomentAs(expectedDay)) {
+        currentStreak++;
+      } else {
+        if (currentStreak > maxStreak) maxStreak = currentStreak;
+        currentStreak = 1;
+      }
+      expectedDay = day.add(const Duration(days: 1));
+    }
+
+    if (currentStreak > maxStreak) maxStreak = currentStreak;
+    return maxStreak;
+  }
+
   PeriodSummary _summaryForRange(
     List<Session> sessions, {
     required DateTime start,

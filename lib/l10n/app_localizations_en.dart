@@ -54,15 +54,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeReminderTooltip => 'Set daily reminder';
 
   @override
-  String get homeReminderTitle => 'It\'s time to see the stars';
+  String get homeReminderTitle => 'Keep your star streak!';
 
   @override
   String get homeReminderBody =>
-      'Focus while you work, and generate a bright sky';
+      'Come in today so you don\'t lose your consecutive focus days.';
 
   @override
   String homeReminderSet(Object time) {
-    return 'Daily reminder set at $time';
+    return 'Streak reminder set at $time';
   }
 
   @override

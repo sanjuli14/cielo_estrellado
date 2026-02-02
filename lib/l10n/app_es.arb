@@ -29,9 +29,9 @@
   "homeMuteTooltip": "Silenciar música",
   "homeUnmuteTooltip": "Activar música",
   "homeReminderTooltip": "Configurar recordatorio diario",
-  "homeReminderTitle": "Es hora de ver las estrellas",
-  "homeReminderBody": "Enfocate mientras trabajas, y genera un cielo brillante",
-  "homeReminderSet": "Recordatorio diario programado a las {time}",
+  "homeReminderTitle": "¡Mantén tu racha de estrellas!",
+  "homeReminderBody": "Entra hoy para no perder tus días seguidos de enfoque.",
+  "homeReminderSet": "Recordatorio de racha programado a las {time}",
   "@homeReminderSet": {
     "placeholders": {
       "time": {}
