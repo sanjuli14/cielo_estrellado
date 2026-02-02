@@ -179,19 +179,19 @@ abstract class AppLocalizations {
   /// No description provided for @homeReminderTitle.
   ///
   /// In en, this message translates to:
-  /// **'It\'s time to see the stars'**
+  /// **'Keep your star streak!'**
   String get homeReminderTitle;
 
   /// No description provided for @homeReminderBody.
   ///
   /// In en, this message translates to:
-  /// **'Focus while you work, and generate a bright sky'**
+  /// **'Come in today so you don\'t lose your consecutive focus days.'**
   String get homeReminderBody;
 
   /// No description provided for @homeReminderSet.
   ///
   /// In en, this message translates to:
-  /// **'Daily reminder set at {time}'**
+  /// **'Streak reminder set at {time}'**
   String homeReminderSet(Object time);
 
   /// No description provided for @homeReminderDenied.

@@ -29,9 +29,9 @@
   "homeMuteTooltip": "Mute music",
   "homeUnmuteTooltip": "Unmute music",
   "homeReminderTooltip": "Set daily reminder",
-  "homeReminderTitle": "It's time to see the stars",
-  "homeReminderBody": "Focus while you work, and generate a bright sky",
-  "homeReminderSet": "Daily reminder set at {time}",
+  "homeReminderTitle": "Keep your star streak!",
+  "homeReminderBody": "Come in today so you don't lose your consecutive focus days.",
+  "homeReminderSet": "Streak reminder set at {time}",
   "@homeReminderSet": {
     "placeholders": {
       "time": {}

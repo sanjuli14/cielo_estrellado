@@ -72,7 +72,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
       case GoalType.starsPerMonth:
         return 'Ej: 100';
       case GoalType.consecutiveDays:
-        return 'Ej: 7';
+        return '';
     }
   }
 
@@ -89,6 +89,19 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
     final repo = ref.read(goalRepositoryProvider);
 
     for (final type in GoalType.values) {
+      if (type == GoalType.consecutiveDays) {
+        // Streak is always active now
+        final goal = Goal(
+          id: type.name,
+          type: type,
+          targetValue: 0, // Target doesn't matter for automatic streak display
+          isActive: true,
+          createdAt: DateTime.now(),
+        );
+        await repo.saveGoal(goal);
+        continue;
+      }
+
       final isActive = _activeStates[type] ?? false;
       final text = _controllers[type]?.text ?? '';
 
@@ -200,7 +213,15 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  ...GoalType.values.map((type) => _buildGoalCard(type)),
+                  ...(() {
+                    final goalProgressAsync = ref.watch(goalProgressProvider);
+                    final goalProgress = goalProgressAsync.asData?.value ?? [];
+                    
+                    return GoalType.values.map((type) {
+                      final progress = goalProgress.where((p) => p.goal.type == type).firstOrNull;
+                      return _buildGoalCard(type, progress?.currentValue);
+                    });
+                  })(),
                 ],
               ),
             ),
@@ -235,7 +256,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
     );
   }
 
-  Widget _buildGoalCard(GoalType type) {
+  Widget _buildGoalCard(GoalType type, int? currentStreakValue) {
     final isActive = _activeStates[type] ?? false;
 
     return Container(
@@ -266,27 +287,52 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                   fontFamily: 'Poppins',
                 ),
               ),
-              Switch(
-                value: isActive,
-                onChanged: (value) {
-                  setState(() {
-                    _activeStates[type] = value;
-                  });
-                },
-                activeColor: const Color(0xFFFFD1A4),
-                activeTrackColor: const Color(0xFFFFD1A4).withOpacity(0.5),
-                inactiveThumbColor: Colors.white70,
-                inactiveTrackColor: Colors.transparent,
-                trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((states) {
-                  if (states.contains(WidgetState.selected)) {
-                    return null; // Use default for active
-                  }
-                  return Colors.white24; // Subtle border for inactive
-                }),
-              ),
+              if (type == GoalType.consecutiveDays)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD1A4).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFFFD1A4).withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.flash_on, color: Color(0xFFFFD1A4), size: 14),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${currentStreakValue ?? 0}',
+                        style: const TextStyle(
+                          color: Color(0xFFFFD1A4),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Switch(
+                  value: isActive,
+                  onChanged: (value) {
+                    setState(() {
+                      _activeStates[type] = value;
+                    });
+                  },
+                  activeColor: const Color(0xFFFFD1A4),
+                  activeTrackColor: const Color(0xFFFFD1A4).withOpacity(0.5),
+                  inactiveThumbColor: Colors.white70,
+                  inactiveTrackColor: Colors.transparent,
+                  trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return null; // Use default for active
+                    }
+                    return Colors.white24; // Subtle border for inactive
+                  }),
+                ),
             ],
           ),
-          if (isActive) ...[
+          if (isActive && type != GoalType.consecutiveDays) ...[
             const SizedBox(height: 16),
             TextField(
               controller: _controllers[type],
@@ -401,7 +447,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
       case GoalType.starsPerMonth:
         return '$current - $target estrellas';
       case GoalType.consecutiveDays:
-        return '$current - $target días';
+        return 'Racha actual: $current días';
     }
   }
 }

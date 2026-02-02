@@ -55,15 +55,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeReminderTooltip => 'Configurar recordatorio diario';
 
   @override
-  String get homeReminderTitle => 'Es hora de ver las estrellas';
+  String get homeReminderTitle => '¡Mantén tu racha de estrellas!';
 
   @override
   String get homeReminderBody =>
-      'Enfocate mientras trabajas, y genera un cielo brillante';
+      'Entra hoy para no perder tus días seguidos de enfoque.';
 
   @override
   String homeReminderSet(Object time) {
-    return 'Recordatorio diario programado a las $time';
+    return 'Recordatorio de racha programado a las $time';
   }
 
   @override
