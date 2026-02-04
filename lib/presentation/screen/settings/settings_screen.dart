@@ -2,6 +2,7 @@ import 'package:cielo_estrellado/core/audio/audio_provider.dart';
 import 'package:cielo_estrellado/core/notifications/notification_service.dart';
 import 'package:cielo_estrellado/l10n/app_localizations.dart';
 import 'package:cielo_estrellado/presentation/screen/goals/goals_screen.dart';
+import 'package:cielo_estrellado/presentation/screen/stats/stats_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
@@ -130,6 +131,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 }),
               ),
             ),
+            const SizedBox(height: 16),
+            _buildSettingCard(
+                icon: Icons.query_stats, 
+                title: "Estadisticas", 
+                subtitle: "Estadisticas Mensuales", 
+                onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const StatsScreen()))),
             const SizedBox(height: 16),
             _buildSettingCard(
               icon: Icons.notifications_active_outlined,

@@ -298,18 +298,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     return Scaffold(
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onVerticalDragEnd: (details) {
-          if (timer.isRunning) return;
-          final v = details.primaryVelocity;
-          if (v == null) return;
-          if (v < -600) {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const StatsScreen(),
-              ),
-            );
-          }
-        },
         onTapUp: (details) {
           if (timer.isRunning) return;
           if (timer.isFinished) return;
@@ -488,7 +476,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               ),
 
 
-            if (!timer.isFinished)
+            if (timer.isFinished)
               Positioned(
                 top: 24,
                 left: 16,
@@ -547,24 +535,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       ),
                     ),
                   ),
-                ),
-              ),
-            if(timer.isRunning == false)
-              Positioned(
-                bottom: screenHeight * 0.15, // Responsive position
-                right: 0,
-                left: 0,
-                child: IgnorePointer(
-                child: Center(
-                  child: Text(
-                    AppLocalizations.of(context)!.homeSwipeUpStats,
-                    style: const TextStyle(
-                        fontFamily: "Poppins",
-                        color: Colors.white38,
-                        fontSize: 12,
-                    ),
-                  ),
-                ),
                 ),
               ),
 
