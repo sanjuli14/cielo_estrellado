@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:cielo_estrellado/features/app_blocker/data/app_blocker_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -99,7 +100,8 @@ class WorkTimerController extends Notifier<WorkTimerState> {
       endedAt: null,
       elapsed: Duration.zero,
     );
-
+    
+    ref.read(appBlockerServiceProvider).startMonitoring();
     _startTicker();
   }
 
@@ -111,11 +113,16 @@ class WorkTimerController extends Notifier<WorkTimerState> {
     if (state.isRunning) return;
     if (state.isFinished) return;
     state = state.copyWith(isRunning: true);
+    
+    ref.read(appBlockerServiceProvider).startMonitoring();
     _startTicker();
   }
 
   void finish() {
     if (!state.isRunning) return;
+    
+    ref.read(appBlockerServiceProvider).stopMonitoring();
+    
     _ticker?.cancel();
     state = state.copyWith(
       isRunning: false,
@@ -129,6 +136,7 @@ class WorkTimerController extends Notifier<WorkTimerState> {
   }
 
   void reset() {
+    ref.read(appBlockerServiceProvider).stopMonitoring();
     _ticker?.cancel();
     final seed = DateTime.now().millisecondsSinceEpoch;
     state = WorkTimerState.initial(skySeed: seed);

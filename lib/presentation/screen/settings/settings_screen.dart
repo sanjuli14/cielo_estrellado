@@ -3,6 +3,7 @@ import 'package:cielo_estrellado/core/notifications/notification_service.dart';
 import 'package:cielo_estrellado/l10n/app_localizations.dart';
 import 'package:cielo_estrellado/presentation/screen/goals/goals_screen.dart';
 import 'package:cielo_estrellado/presentation/screen/stats/stats_screen.dart';
+import 'package:cielo_estrellado/features/app_blocker/presentation/screen/app_blocker_selector_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
@@ -154,6 +155,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => const GoalsScreen(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+            _buildSettingCard(
+              icon: Icons.block,
+              title: 'Bloqueo de Apps',
+              subtitle: 'Selecciona apps para bloquear',
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const AppBlockerSelectorScreen(),
                   ),
                 );
               },

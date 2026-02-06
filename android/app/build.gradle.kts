@@ -16,9 +16,9 @@ android {
     }
 
     kotlinOptions {
-        // Puedes mantener jvmTarget 1.8 para compatibilidad
         jvmTarget = "1.8"
     }
+
 
     defaultConfig {
         applicationId = "com.example.cielo_estrellado"
@@ -44,7 +44,6 @@ android {
 }
 
 dependencies {
-    // Solo necesitas esto para desugaring
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
 

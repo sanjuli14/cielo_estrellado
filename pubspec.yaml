@@ -49,6 +49,7 @@ dependencies:
   flutter_svg: ^2.0.10+1
   flutter_localizations:
     sdk: flutter
+  installed_apps: ^2.1.1
 
 
 dev_dependencies:

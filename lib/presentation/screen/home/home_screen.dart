@@ -476,7 +476,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               ),
 
 
-            if (timer.isFinished)
+              if(!timer.isRunning)
               Positioned(
                 top: 24,
                 left: 16,
