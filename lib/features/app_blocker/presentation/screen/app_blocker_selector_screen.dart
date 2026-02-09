@@ -1,6 +1,7 @@
 import 'package:cielo_estrellado/features/app_blocker/presentation/controller/app_blocker_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cielo_estrellado/l10n/app_localizations.dart';
 
 class AppBlockerSelectorScreen extends ConsumerStatefulWidget {
   const AppBlockerSelectorScreen({super.key});
@@ -41,9 +42,9 @@ class _AppBlockerSelectorScreenState extends ConsumerState<AppBlockerSelectorScr
       return _buildPermissionRequest(
         context,
         icon: Icons.data_usage,
-        title: '1. Acceso de Uso',
-        description: 'Necesitamos saber qué app estás usando actualmente.\n\nBusca "Cielo Estrellado" en la lista y activa "Permitir acceso a uso".',
-        buttonText: 'Ir a Acceso de Uso',
+        title: AppLocalizations.of(context)!.blockerUsageTitle,
+        description: AppLocalizations.of(context)!.blockerUsageDesc,
+        buttonText: AppLocalizations.of(context)!.blockerUsageBtn,
         onPressed: () => ref.read(appBlockerControllerProvider.notifier).requestUsagePermission(),
       );
     }
@@ -52,16 +53,16 @@ class _AppBlockerSelectorScreenState extends ConsumerState<AppBlockerSelectorScr
        return _buildPermissionRequest(
         context,
         icon: Icons.layers,
-        title: '2. Aparecer Encima',
-        description: 'Necesitamos bloquear la pantalla cuando abras una app prohibida.\n\nBusca "Cielo Estrellado" y activa "Permitir mostrar sobre otras apps".',
-        buttonText: 'Ir a Permiso de Superposición',
+        title: AppLocalizations.of(context)!.blockerOverlayTitle,
+        description: AppLocalizations.of(context)!.blockerOverlayDesc,
+        buttonText: AppLocalizations.of(context)!.blockerOverlayBtn,
         onPressed: () => ref.read(appBlockerControllerProvider.notifier).requestOverlayPermission(),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bloqueo de Apps'),
+        title: Text(AppLocalizations.of(context)!.blockerTitle),
       ),
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -100,8 +101,9 @@ class _AppBlockerSelectorScreenState extends ConsumerState<AppBlockerSelectorScr
     required VoidCallback onPressed,
   }) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Bloqueo de Apps')),
+      appBar: AppBar(title: Text(l10n.blockerTitle)),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),

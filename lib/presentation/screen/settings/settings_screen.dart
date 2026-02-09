@@ -64,6 +64,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           title: l10n.homeReminderTitle,
           body: l10n.homeReminderBody,
           time: picked,
+          channelName: l10n.notifChannelName,
+          channelDescription: l10n.notifChannelDesc,
         );
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -95,9 +97,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Configuración',
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context)!.settingsTitle,
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
             color: Colors.white,
@@ -114,8 +116,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             _buildSettingCard(
               icon: Icons.volume_up_outlined,
-              title: 'Sonido',
-              subtitle: _isMuted ? 'Silenciado' : 'Activado',
+              title: AppLocalizations.of(context)!.settingsSound,
+              subtitle: _isMuted ? AppLocalizations.of(context)!.settingsMuted : AppLocalizations.of(context)!.settingsActive,
               onTap: _toggleMute,
               trailing: Switch(
                 value: !_isMuted,
@@ -135,22 +137,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 16),
             _buildSettingCard(
                 icon: Icons.query_stats, 
-                title: "Estadisticas", 
-                subtitle: "Estadisticas Mensuales", 
+                title: AppLocalizations.of(context)!.settingsStats, 
+                subtitle: AppLocalizations.of(context)!.settingsStatsDesc, 
                 onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const StatsScreen()))),
             const SizedBox(height: 16),
             _buildSettingCard(
               icon: Icons.notifications_active_outlined,
-              title: 'Notificaciones',
-              subtitle: 'Configurar recordatorios diarios',
+              title: AppLocalizations.of(context)!.settingsNotifs,
+              subtitle: AppLocalizations.of(context)!.settingsNotifsDesc,
               onTap: () => _setupReminder(context, ref),
             ),
             const SizedBox(height: 16),
             _buildSettingCard(
               icon: Icons.emoji_events_outlined,
-              title: 'Metas Personales',
-              subtitle: 'Configura tus objetivos',
+              title: AppLocalizations.of(context)!.settingsGoals,
+              subtitle: AppLocalizations.of(context)!.settingsGoalsDesc,
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -162,8 +164,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 16),
             _buildSettingCard(
               icon: Icons.block,
-              title: 'Bloqueo de Apps',
-              subtitle: 'Selecciona apps para bloquear',
+              title: AppLocalizations.of(context)!.settingsBlocker,
+              subtitle: AppLocalizations.of(context)!.settingsBlockerDesc,
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(

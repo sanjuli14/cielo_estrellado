@@ -1,3 +1,5 @@
+import 'package:cielo_estrellado/l10n/app_localizations.dart';
+
 enum MoonPhase {
   newMoon,
   waxingCrescent,
@@ -44,24 +46,24 @@ class MoonPhaseCalculator {
     return MoonPhase.waningCrescent;
   }
 
-  static String getMoonPhaseLabel(MoonPhase phase) {
+  static String getMoonPhaseLabel(MoonPhase phase, AppLocalizations l10n) {
     switch (phase) {
       case MoonPhase.newMoon:
-        return 'Luna Nueva';
+        return l10n.moonNew;
       case MoonPhase.waxingCrescent:
-        return 'Luna Creciente';
+        return l10n.moonWaxingCrescent;
       case MoonPhase.firstQuarter:
-        return 'Cuarto Creciente';
+        return l10n.moonFirstQuarter;
       case MoonPhase.waxingGibbous:
-        return 'Gibosa Creciente';
+        return l10n.moonWaxingGibbous;
       case MoonPhase.fullMoon:
-        return 'Luna Llena';
+        return l10n.moonFull;
       case MoonPhase.waningGibbous:
-        return 'Gibosa Menguante';
+        return l10n.moonWaningGibbous;
       case MoonPhase.lastQuarter:
-        return 'Cuarto Menguante';
+        return l10n.moonLastQuarter;
       case MoonPhase.waningCrescent:
-        return 'Luna Menguante';
+        return l10n.moonWaningCrescent;
     }
   }
 }

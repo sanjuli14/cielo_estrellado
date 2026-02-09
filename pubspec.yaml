@@ -50,6 +50,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   installed_apps: ^2.1.1
+  uuid: ^4.5.2
 
 
 dev_dependencies:

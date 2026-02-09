@@ -15,8 +15,10 @@ class GoalTypeAdapter extends TypeAdapter<GoalType> {
     switch (reader.readByte()) {
       case 0:
         return GoalType.starsPerMonth;
-      default:
+      case 2:
         return GoalType.consecutiveDays;
+      default:
+        return GoalType.starsPerMonth;
     }
   }
 

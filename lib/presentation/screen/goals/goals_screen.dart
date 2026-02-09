@@ -61,16 +61,16 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
   String _getGoalTitle(GoalType type) {
     switch (type) {
       case GoalType.starsPerMonth:
-        return '⭐ Estrellas por mes';
+        return AppLocalizations.of(context)!.goalsItemStars;
       case GoalType.consecutiveDays:
-        return '🔥 Días seguidos';
+        return AppLocalizations.of(context)!.goalsItemStreak;
     }
   }
 
   String _getGoalHint(GoalType type) {
     switch (type) {
       case GoalType.starsPerMonth:
-        return 'Ej: 100';
+        return AppLocalizations.of(context)!.goalsHintStars;
       case GoalType.consecutiveDays:
         return '';
     }
@@ -79,9 +79,9 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
   String _getGoalUnit(GoalType type) {
     switch (type) {
       case GoalType.starsPerMonth:
-        return 'estrellas';
+        return AppLocalizations.of(context)!.goalsUnitStars;
       case GoalType.consecutiveDays:
-        return 'días';
+        return AppLocalizations.of(context)!.goalsUnitDays;
     }
   }
 
@@ -125,9 +125,9 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Metas guardadas exitosamente'),
-          backgroundColor: Color(0xFFFFD1A4),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.goalsSavedSuccess),
+          backgroundColor: const Color(0xFFFFD1A4),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -153,9 +153,9 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Metas Personales',
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context)!.goalsTitle,
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
             color: Colors.white,
@@ -186,9 +186,9 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Tu Progreso',
-                            style: TextStyle(
+                          Text(
+                            AppLocalizations.of(context)!.goalsYourProgress,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -204,9 +204,9 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                       );
                     },
                   ),
-                  const Text(
-                    'Define tus objetivos de productividad',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)!.goalsDefineObjectives,
+                    style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 16,
                       fontFamily: 'Poppins',
@@ -239,9 +239,9 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Guardar Metas',
-                    style: TextStyle(
+                  child: Text(
+                    AppLocalizations.of(context)!.goalsSaveBtn,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Poppins',
@@ -445,9 +445,9 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
 
     switch (progress.goal.type) {
       case GoalType.starsPerMonth:
-        return '$current - $target estrellas';
+        return AppLocalizations.of(context)!.goalsProgressStars(current.toString(), target.toString());
       case GoalType.consecutiveDays:
-        return 'Racha actual: $current días';
+        return AppLocalizations.of(context)!.goalsCurrentStreak(current.toString());
     }
   }
 }
