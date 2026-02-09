@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:cielo_estrellado/features/sky/constellations.dart';
 import 'package:cielo_estrellado/features/sky/moon_phase_calculator.dart';
 import 'package:cielo_estrellado/features/sky/sky_painter.dart';
+import 'package:cielo_estrellado/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -38,7 +39,8 @@ class ShareCard extends StatelessWidget {
     const height = 300.0;
     final moonPhaseValue = MoonPhaseCalculator.getMoonPhase(DateTime.now());
     final moonPhaseEnum = MoonPhaseCalculator.getPhaseName(moonPhaseValue);
-    final moonPhaseLabel = MoonPhaseCalculator.getMoonPhaseLabel(moonPhaseEnum);
+    final l10n = AppLocalizations.of(context)!;
+    final moonPhaseLabel = MoonPhaseCalculator.getMoonPhaseLabel(moonPhaseEnum, l10n);
 
     return ClipRRect(
       child: Container(

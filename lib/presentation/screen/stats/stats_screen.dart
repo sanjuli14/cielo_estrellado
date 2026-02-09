@@ -384,9 +384,10 @@ class _ConstellationsCatalogSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final totalStarsAsync = ref.watch(totalStarsProvider);
     final unlockedAsync = ref.watch(unlockedConstellationsProvider);
-    final allConstellations = Constellation.all;
+    final allConstellations = Constellation.getAll(l10n);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -402,7 +403,7 @@ class _ConstellationsCatalogSection extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Catálogo de Constelaciones",
+                l10n.statsCatalog,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontSize: MediaQuery.of(context).size.width * 0.045,
                   fontWeight: FontWeight.bold,
@@ -509,7 +510,7 @@ class _ConstellationItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    isUnlocked ? "¡Desbloqueada!" : "Requiere ${constellation.starsRequired} estrellas",
+                    isUnlocked ? AppLocalizations.of(context)!.statsUnlocked : AppLocalizations.of(context)!.statsStarsRequired(constellation.starsRequired.toString()),
                     style: TextStyle(
                       color: isUnlocked ? Colors.amber : Colors.white38,
                       fontSize: 12,

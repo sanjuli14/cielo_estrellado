@@ -13,7 +13,9 @@ import 'package:cielo_estrellado/l10n/app_localizations.dart';
 import 'package:cielo_estrellado/models/repositories/session_repositories.dart';
 import 'package:cielo_estrellado/models/sessions.dart';
 import 'package:cielo_estrellado/features/stats/stats_providers.dart';
+import 'package:cielo_estrellado/features/missions/mission_provider.dart';
 import 'package:cielo_estrellado/presentation/screen/home/share_card.dart';
+import 'package:cielo_estrellado/presentation/screen/missions/missions_screen.dart';
 import 'package:cielo_estrellado/presentation/screen/settings/settings_screen.dart';
 import 'package:cielo_estrellado/presentation/screen/stats/stats_screen.dart';
 import 'package:flutter/material.dart';
@@ -80,6 +82,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         await sessionsRepo.saveSession(session);
         _savedSessionForThisRun = true;
 
+        // Update mission progress
+        ref.read(missionProvider.notifier).processSession(session);
+
         print('✅ Session saved successfully!');
       }
     });
@@ -108,6 +113,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         title: l10n.homeReminderTitle,
         body: l10n.homeReminderBody,
         time: time,
+        channelName: l10n.notifChannelName,
+        channelDescription: l10n.notifChannelDesc,
       );
     }
   }
@@ -234,6 +241,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
           title: l10n.homeReminderTitle,
           body: l10n.homeReminderBody,
           time: picked,
+          channelName: l10n.notifChannelName,
+          channelDescription: l10n.notifChannelDesc,
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -268,7 +277,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
 
     final moonPhaseValue = MoonPhaseCalculator.getMoonPhase(DateTime.now());
     final moonPhaseEnum = MoonPhaseCalculator.getPhaseName(moonPhaseValue);
-    final moonPhaseLabel = MoonPhaseCalculator.getMoonPhaseLabel(moonPhaseEnum);
+    final l10n = AppLocalizations.of(context)!;
+    final moonPhaseLabel = MoonPhaseCalculator.getMoonPhaseLabel(moonPhaseEnum, l10n);
 
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
@@ -298,18 +308,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     return Scaffold(
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onVerticalDragEnd: (details) {
-          if (timer.isRunning) return;
-          final v = details.primaryVelocity;
-          if (v == null) return;
-          if (v < -600) {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const StatsScreen(),
-              ),
-            );
-          }
-        },
         onTapUp: (details) {
           if (timer.isRunning) return;
           if (timer.isFinished) return;
@@ -488,7 +486,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               ),
 
 
-            if (!timer.isFinished)
+              if(!timer.isRunning)
               Positioned(
                 top: 24,
                 left: 16,
@@ -502,7 +500,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                         ),
                       );
                     },
-                    tooltip: 'Configuración',
+                    tooltip: AppLocalizations.of(context)!.settingsTitle,
+                  ),
+                ),
+              ),
+
+              if(!timer.isRunning)
+              Positioned(
+                top: 24,
+                right: 16,
+                child: SafeArea(
+                  child: IconButton(
+                    icon: const Icon(Icons.assignment, color: Colors.white38),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const MissionsScreen(),
+                        ),
+                      );
+                    },
+                    tooltip: AppLocalizations.of(context)!.missionTitle,
                   ),
                 ),
               ),
@@ -547,24 +564,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       ),
                     ),
                   ),
-                ),
-              ),
-            if(timer.isRunning == false)
-              Positioned(
-                bottom: screenHeight * 0.15, // Responsive position
-                right: 0,
-                left: 0,
-                child: IgnorePointer(
-                child: Center(
-                  child: Text(
-                    AppLocalizations.of(context)!.homeSwipeUpStats,
-                    style: const TextStyle(
-                        fontFamily: "Poppins",
-                        color: Colors.white38,
-                        fontSize: 12,
-                    ),
-                  ),
-                ),
                 ),
               ),
 

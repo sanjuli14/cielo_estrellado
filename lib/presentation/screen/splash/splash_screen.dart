@@ -1,6 +1,8 @@
+import 'package:cielo_estrellado/core/storage/onboarding_storage.dart';
 import 'package:cielo_estrellado/features/sky/sky_painter.dart';
 import 'package:cielo_estrellado/l10n/app_localizations.dart';
 import 'package:cielo_estrellado/presentation/screen/home/home_screen.dart';
+import 'package:cielo_estrellado/presentation/screen/onboarding/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -64,10 +66,17 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       curve: const Interval(0.7, 0.9, curve: Curves.easeIn),
     );
 
-    _controller.forward().then((_) {
+    _controller.forward().then((_) async {
       if (mounted) {
+        // Check if onboarding has been completed
+        final isCompleted = OnboardingStorage.isOnboardingCompleted();
+        
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(
+            builder: (_) => isCompleted 
+                ? const HomeScreen() 
+                : const OnboardingScreen(),
+          ),
         );
       }
     });
@@ -112,7 +121,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             child: FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                'Copyright (c) 2026. Todos los derechos reservados',
+                AppLocalizations.of(context)!.splashCopyright,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: screenWidth * 0.025, // Responsive font size

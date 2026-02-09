@@ -61,27 +61,27 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
   String _getGoalTitle(GoalType type) {
     switch (type) {
       case GoalType.starsPerMonth:
-        return '⭐ Estrellas por mes';
+        return AppLocalizations.of(context)!.goalsItemStars;
       case GoalType.consecutiveDays:
-        return '🔥 Días seguidos';
+        return AppLocalizations.of(context)!.goalsItemStreak;
     }
   }
 
   String _getGoalHint(GoalType type) {
     switch (type) {
       case GoalType.starsPerMonth:
-        return 'Ej: 100';
+        return AppLocalizations.of(context)!.goalsHintStars;
       case GoalType.consecutiveDays:
-        return 'Ej: 7';
+        return '';
     }
   }
 
   String _getGoalUnit(GoalType type) {
     switch (type) {
       case GoalType.starsPerMonth:
-        return 'estrellas';
+        return AppLocalizations.of(context)!.goalsUnitStars;
       case GoalType.consecutiveDays:
-        return 'días';
+        return AppLocalizations.of(context)!.goalsUnitDays;
     }
   }
 
@@ -89,6 +89,19 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
     final repo = ref.read(goalRepositoryProvider);
 
     for (final type in GoalType.values) {
+      if (type == GoalType.consecutiveDays) {
+        // Streak is always active now
+        final goal = Goal(
+          id: type.name,
+          type: type,
+          targetValue: 0, // Target doesn't matter for automatic streak display
+          isActive: true,
+          createdAt: DateTime.now(),
+        );
+        await repo.saveGoal(goal);
+        continue;
+      }
+
       final isActive = _activeStates[type] ?? false;
       final text = _controllers[type]?.text ?? '';
 
@@ -112,9 +125,9 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Metas guardadas exitosamente'),
-          backgroundColor: Color(0xFFFFD1A4),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.goalsSavedSuccess),
+          backgroundColor: const Color(0xFFFFD1A4),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -140,9 +153,9 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Metas Personales',
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context)!.goalsTitle,
+          style: const TextStyle(
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w600,
             color: Colors.white,
@@ -173,9 +186,9 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Tu Progreso',
-                            style: TextStyle(
+                          Text(
+                            AppLocalizations.of(context)!.goalsYourProgress,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -191,16 +204,24 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                       );
                     },
                   ),
-                  const Text(
-                    'Define tus objetivos de productividad',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)!.goalsDefineObjectives,
+                    style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 16,
                       fontFamily: 'Poppins',
                     ),
                   ),
                   const SizedBox(height: 32),
-                  ...GoalType.values.map((type) => _buildGoalCard(type)),
+                  ...(() {
+                    final goalProgressAsync = ref.watch(goalProgressProvider);
+                    final goalProgress = goalProgressAsync.asData?.value ?? [];
+                    
+                    return GoalType.values.map((type) {
+                      final progress = goalProgress.where((p) => p.goal.type == type).firstOrNull;
+                      return _buildGoalCard(type, progress?.currentValue);
+                    });
+                  })(),
                 ],
               ),
             ),
@@ -218,9 +239,9 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Guardar Metas',
-                    style: TextStyle(
+                  child: Text(
+                    AppLocalizations.of(context)!.goalsSaveBtn,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Poppins',
@@ -235,7 +256,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
     );
   }
 
-  Widget _buildGoalCard(GoalType type) {
+  Widget _buildGoalCard(GoalType type, int? currentStreakValue) {
     final isActive = _activeStates[type] ?? false;
 
     return Container(
@@ -266,27 +287,52 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                   fontFamily: 'Poppins',
                 ),
               ),
-              Switch(
-                value: isActive,
-                onChanged: (value) {
-                  setState(() {
-                    _activeStates[type] = value;
-                  });
-                },
-                activeColor: const Color(0xFFFFD1A4),
-                activeTrackColor: const Color(0xFFFFD1A4).withOpacity(0.5),
-                inactiveThumbColor: Colors.white70,
-                inactiveTrackColor: Colors.transparent,
-                trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((states) {
-                  if (states.contains(WidgetState.selected)) {
-                    return null; // Use default for active
-                  }
-                  return Colors.white24; // Subtle border for inactive
-                }),
-              ),
+              if (type == GoalType.consecutiveDays)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD1A4).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFFFD1A4).withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.flash_on, color: Color(0xFFFFD1A4), size: 14),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${currentStreakValue ?? 0}',
+                        style: const TextStyle(
+                          color: Color(0xFFFFD1A4),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Switch(
+                  value: isActive,
+                  onChanged: (value) {
+                    setState(() {
+                      _activeStates[type] = value;
+                    });
+                  },
+                  activeColor: const Color(0xFFFFD1A4),
+                  activeTrackColor: const Color(0xFFFFD1A4).withOpacity(0.5),
+                  inactiveThumbColor: Colors.white70,
+                  inactiveTrackColor: Colors.transparent,
+                  trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return null; // Use default for active
+                    }
+                    return Colors.white24; // Subtle border for inactive
+                  }),
+                ),
             ],
           ),
-          if (isActive) ...[
+          if (isActive && type != GoalType.consecutiveDays) ...[
             const SizedBox(height: 16),
             TextField(
               controller: _controllers[type],
@@ -399,9 +445,9 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
 
     switch (progress.goal.type) {
       case GoalType.starsPerMonth:
-        return '$current - $target estrellas';
+        return AppLocalizations.of(context)!.goalsProgressStars(current.toString(), target.toString());
       case GoalType.consecutiveDays:
-        return '$current - $target días';
+        return AppLocalizations.of(context)!.goalsCurrentStreak(current.toString());
     }
   }
 }

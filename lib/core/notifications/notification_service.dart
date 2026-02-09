@@ -72,6 +72,8 @@ class NotificationService {
     required String title,
     required String body,
     required TimeOfDay time,
+    String? channelName,
+    String? channelDescription,
   }) async {
     final scheduledDate = _nextInstanceOfTime(time);
     
@@ -81,17 +83,17 @@ class NotificationService {
         title,
         body,
         scheduledDate,
-        const NotificationDetails(
+        NotificationDetails(
           android: AndroidNotificationDetails(
             'daily_reminder_channel',
-            'Recordatorios Diarios',
-            channelDescription: 'Canal para recordatorios de uso de la aplicación',
+            channelName ?? 'Daily Reminders',
+            channelDescription: channelDescription ?? 'Application reminders',
             importance: Importance.max,
             priority: Priority.high,
             showWhen: true,
             color: Colors.transparent,
           ),
-          iOS: DarwinNotificationDetails(),
+          iOS: const DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         matchDateTimeComponents: DateTimeComponents.time,
@@ -104,15 +106,15 @@ class NotificationService {
         title,
         body,
         scheduledDate,
-        const NotificationDetails(
+        NotificationDetails(
           android: AndroidNotificationDetails(
             'daily_reminder_channel_alt',
-            'Recordatorios',
+            channelName ?? 'Reminders',
             importance: Importance.max,
             priority: Priority.high,
             color: Colors.transparent,
           ),
-          iOS: DarwinNotificationDetails(),
+          iOS: const DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         matchDateTimeComponents: DateTimeComponents.time,

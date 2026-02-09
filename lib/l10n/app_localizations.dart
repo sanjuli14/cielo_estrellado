@@ -179,19 +179,19 @@ abstract class AppLocalizations {
   /// No description provided for @homeReminderTitle.
   ///
   /// In en, this message translates to:
-  /// **'It\'s time to see the stars'**
+  /// **'Keep your star streak!'**
   String get homeReminderTitle;
 
   /// No description provided for @homeReminderBody.
   ///
   /// In en, this message translates to:
-  /// **'Focus while you work, and generate a bright sky'**
+  /// **'Come in today so you don\'t lose your consecutive focus days.'**
   String get homeReminderBody;
 
   /// No description provided for @homeReminderSet.
   ///
   /// In en, this message translates to:
-  /// **'Daily reminder set at {time}'**
+  /// **'Streak reminder set at {time}'**
   String homeReminderSet(Object time);
 
   /// No description provided for @homeReminderDenied.
@@ -259,6 +259,618 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Channel for application usage reminders'**
   String get notifChannelDesc;
+
+  /// No description provided for @onboardingWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Focus Night'**
+  String get onboardingWelcomeTitle;
+
+  /// No description provided for @onboardingWelcomeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn your focus time into a beautiful starry sky full of constellations'**
+  String get onboardingWelcomeDesc;
+
+  /// No description provided for @onboardingStarsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate Stars'**
+  String get onboardingStarsTitle;
+
+  /// No description provided for @onboardingStarsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Every second of focus generates 3 stars. Work focused and fill your night sky'**
+  String get onboardingStarsDesc;
+
+  /// No description provided for @onboardingConstellationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Constellations'**
+  String get onboardingConstellationsTitle;
+
+  /// No description provided for @onboardingConstellationsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Accumulate stars to discover 13 beautiful constellations. From Corona Borealis to Ursa Major'**
+  String get onboardingConstellationsDesc;
+
+  /// No description provided for @onboardingGoalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Your Goals'**
+  String get onboardingGoalsTitle;
+
+  /// No description provided for @onboardingGoalsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Set monthly star goals and maintain streaks of consecutive working days'**
+  String get onboardingGoalsDesc;
+
+  /// No description provided for @onboardingDistractionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Eliminate Distractions'**
+  String get onboardingDistractionsTitle;
+
+  /// No description provided for @onboardingDistractionsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Block apps that distract you during your deep focus sessions'**
+  String get onboardingDistractionsDesc;
+
+  /// No description provided for @onboardingProgressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze Your Progress'**
+  String get onboardingProgressTitle;
+
+  /// No description provided for @onboardingProgressDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Review detailed charts of your weekly and monthly productivity. Improve continuously'**
+  String get onboardingProgressDesc;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get onboardingStart;
+
+  /// No description provided for @splashCopyright.
+  ///
+  /// In en, this message translates to:
+  /// **'Copyright (c) 2026. All rights reserved'**
+  String get splashCopyright;
+
+  /// No description provided for @blockerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App Blocker'**
+  String get blockerTitle;
+
+  /// No description provided for @blockerUsageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Usage Access'**
+  String get blockerUsageTitle;
+
+  /// No description provided for @blockerUsageDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'We need to know which app you are currently using.\n\nFind \"Cielo Estrellado\" in the list and enable \"Allow usage access\".'**
+  String get blockerUsageDesc;
+
+  /// No description provided for @blockerUsageBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Usage Access'**
+  String get blockerUsageBtn;
+
+  /// No description provided for @blockerOverlayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Appear on Top'**
+  String get blockerOverlayTitle;
+
+  /// No description provided for @blockerOverlayDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'We need to block the screen when you open a restricted app.\n\nFind \"Cielo Estrellado\" and enable \"Allow display over other apps\".'**
+  String get blockerOverlayDesc;
+
+  /// No description provided for @blockerOverlayBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Overlay Permission'**
+  String get blockerOverlayBtn;
+
+  /// No description provided for @constName_corona_borealis.
+  ///
+  /// In en, this message translates to:
+  /// **'Corona Borealis'**
+  String get constName_corona_borealis;
+
+  /// No description provided for @constDesc_corona_borealis.
+  ///
+  /// In en, this message translates to:
+  /// **'A small and beautiful crown of stars.'**
+  String get constDesc_corona_borealis;
+
+  /// No description provided for @constName_aries.
+  ///
+  /// In en, this message translates to:
+  /// **'Aries'**
+  String get constName_aries;
+
+  /// No description provided for @constDesc_aries.
+  ///
+  /// In en, this message translates to:
+  /// **'The Ram. A small but brave constellation.'**
+  String get constDesc_aries;
+
+  /// No description provided for @constName_crux.
+  ///
+  /// In en, this message translates to:
+  /// **'Crux'**
+  String get constName_crux;
+
+  /// No description provided for @constDesc_crux.
+  ///
+  /// In en, this message translates to:
+  /// **'Emblematic constellation of the southern hemisphere.'**
+  String get constDesc_crux;
+
+  /// No description provided for @constName_scorpius.
+  ///
+  /// In en, this message translates to:
+  /// **'Scorpius'**
+  String get constName_scorpius;
+
+  /// No description provided for @constDesc_scorpius.
+  ///
+  /// In en, this message translates to:
+  /// **'Constellation with a hook shape.'**
+  String get constDesc_scorpius;
+
+  /// No description provided for @constName_cygnus.
+  ///
+  /// In en, this message translates to:
+  /// **'Cygnus'**
+  String get constName_cygnus;
+
+  /// No description provided for @constDesc_cygnus.
+  ///
+  /// In en, this message translates to:
+  /// **'Also known as the Northern Cross.'**
+  String get constDesc_cygnus;
+
+  /// No description provided for @constName_draco.
+  ///
+  /// In en, this message translates to:
+  /// **'Draco'**
+  String get constName_draco;
+
+  /// No description provided for @constDesc_draco.
+  ///
+  /// In en, this message translates to:
+  /// **'The Dragon that winds between the bears.'**
+  String get constDesc_draco;
+
+  /// No description provided for @constName_lyra.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyra'**
+  String get constName_lyra;
+
+  /// No description provided for @constDesc_lyra.
+  ///
+  /// In en, this message translates to:
+  /// **'Contains Vega, one of the brightest stars.'**
+  String get constDesc_lyra;
+
+  /// No description provided for @constName_pegasus.
+  ///
+  /// In en, this message translates to:
+  /// **'Pegasus'**
+  String get constName_pegasus;
+
+  /// No description provided for @constDesc_pegasus.
+  ///
+  /// In en, this message translates to:
+  /// **'The Great Square of the winged horse.'**
+  String get constDesc_pegasus;
+
+  /// No description provided for @constName_leo.
+  ///
+  /// In en, this message translates to:
+  /// **'Leo'**
+  String get constName_leo;
+
+  /// No description provided for @constDesc_leo.
+  ///
+  /// In en, this message translates to:
+  /// **'One of the oldest constellations of the zodiac.'**
+  String get constDesc_leo;
+
+  /// No description provided for @constName_andromeda.
+  ///
+  /// In en, this message translates to:
+  /// **'Andromeda'**
+  String get constName_andromeda;
+
+  /// No description provided for @constDesc_andromeda.
+  ///
+  /// In en, this message translates to:
+  /// **'Chained to Pegasus, it contains the neighboring galaxy.'**
+  String get constDesc_andromeda;
+
+  /// No description provided for @constName_orion.
+  ///
+  /// In en, this message translates to:
+  /// **'Orion'**
+  String get constName_orion;
+
+  /// No description provided for @constDesc_orion.
+  ///
+  /// In en, this message translates to:
+  /// **'The Hunter. One of the most recognizable constellations.'**
+  String get constDesc_orion;
+
+  /// No description provided for @constName_cassiopeia.
+  ///
+  /// In en, this message translates to:
+  /// **'Cassiopeia'**
+  String get constName_cassiopeia;
+
+  /// No description provided for @constDesc_cassiopeia.
+  ///
+  /// In en, this message translates to:
+  /// **'The Queen. W shape.'**
+  String get constDesc_cassiopeia;
+
+  /// No description provided for @constName_centaurus.
+  ///
+  /// In en, this message translates to:
+  /// **'Centaurus'**
+  String get constName_centaurus;
+
+  /// No description provided for @constDesc_centaurus.
+  ///
+  /// In en, this message translates to:
+  /// **'One of the largest and brightest constellations.'**
+  String get constDesc_centaurus;
+
+  /// No description provided for @constName_ursa_major.
+  ///
+  /// In en, this message translates to:
+  /// **'Ursa Major'**
+  String get constName_ursa_major;
+
+  /// No description provided for @constDesc_ursa_major.
+  ///
+  /// In en, this message translates to:
+  /// **'The Great Bear.'**
+  String get constDesc_ursa_major;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound'**
+  String get settingsSound;
+
+  /// No description provided for @settingsMuted.
+  ///
+  /// In en, this message translates to:
+  /// **'Muted'**
+  String get settingsMuted;
+
+  /// No description provided for @settingsActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get settingsActive;
+
+  /// No description provided for @settingsStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get settingsStats;
+
+  /// No description provided for @settingsStatsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Statistics'**
+  String get settingsStatsDesc;
+
+  /// No description provided for @settingsNotifs.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get settingsNotifs;
+
+  /// No description provided for @settingsNotifsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Set daily reminders'**
+  String get settingsNotifsDesc;
+
+  /// No description provided for @settingsGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Goals'**
+  String get settingsGoals;
+
+  /// No description provided for @settingsGoalsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure your objectives'**
+  String get settingsGoalsDesc;
+
+  /// No description provided for @settingsBlocker.
+  ///
+  /// In en, this message translates to:
+  /// **'App Blocker'**
+  String get settingsBlocker;
+
+  /// No description provided for @settingsBlockerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Select apps to block'**
+  String get settingsBlockerDesc;
+
+  /// No description provided for @statsCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Constellations Catalog'**
+  String get statsCatalog;
+
+  /// No description provided for @statsUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked!'**
+  String get statsUnlocked;
+
+  /// No description provided for @statsStarsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Requires {count} stars'**
+  String statsStarsRequired(Object count);
+
+  /// No description provided for @goalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Goals'**
+  String get goalsTitle;
+
+  /// No description provided for @goalsYourProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Progress'**
+  String get goalsYourProgress;
+
+  /// No description provided for @goalsDefineObjectives.
+  ///
+  /// In en, this message translates to:
+  /// **'Define your productivity objectives'**
+  String get goalsDefineObjectives;
+
+  /// No description provided for @goalsSaveBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Goals'**
+  String get goalsSaveBtn;
+
+  /// No description provided for @goalsSavedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals saved successfully'**
+  String get goalsSavedSuccess;
+
+  /// No description provided for @goalsItemStars.
+  ///
+  /// In en, this message translates to:
+  /// **'⭐ Stars per month'**
+  String get goalsItemStars;
+
+  /// No description provided for @goalsItemStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'🔥 Consecutive days'**
+  String get goalsItemStreak;
+
+  /// No description provided for @goalsHintStars.
+  ///
+  /// In en, this message translates to:
+  /// **'Ex: 100'**
+  String get goalsHintStars;
+
+  /// No description provided for @goalsUnitStars.
+  ///
+  /// In en, this message translates to:
+  /// **'stars'**
+  String get goalsUnitStars;
+
+  /// No description provided for @goalsUnitDays.
+  ///
+  /// In en, this message translates to:
+  /// **'days'**
+  String get goalsUnitDays;
+
+  /// No description provided for @goalsCurrentStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Current streak: {count} days'**
+  String goalsCurrentStreak(Object count);
+
+  /// No description provided for @goalsProgressStars.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} - {target} stars'**
+  String goalsProgressStars(Object current, Object target);
+
+  /// No description provided for @moonNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New Moon'**
+  String get moonNew;
+
+  /// No description provided for @moonWaxingCrescent.
+  ///
+  /// In en, this message translates to:
+  /// **'Waxing Crescent'**
+  String get moonWaxingCrescent;
+
+  /// No description provided for @moonFirstQuarter.
+  ///
+  /// In en, this message translates to:
+  /// **'First Quarter'**
+  String get moonFirstQuarter;
+
+  /// No description provided for @moonWaxingGibbous.
+  ///
+  /// In en, this message translates to:
+  /// **'Waxing Gibbous'**
+  String get moonWaxingGibbous;
+
+  /// No description provided for @moonFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Moon'**
+  String get moonFull;
+
+  /// No description provided for @moonWaningGibbous.
+  ///
+  /// In en, this message translates to:
+  /// **'Waning Gibbous'**
+  String get moonWaningGibbous;
+
+  /// No description provided for @moonLastQuarter.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Quarter'**
+  String get moonLastQuarter;
+
+  /// No description provided for @moonWaningCrescent.
+  ///
+  /// In en, this message translates to:
+  /// **'Waning Crescent'**
+  String get moonWaningCrescent;
+
+  /// No description provided for @rankStardust.
+  ///
+  /// In en, this message translates to:
+  /// **'Stardust'**
+  String get rankStardust;
+
+  /// No description provided for @rankFlicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Wandering Flicker'**
+  String get rankFlicker;
+
+  /// No description provided for @rankObserver.
+  ///
+  /// In en, this message translates to:
+  /// **'Star Observer'**
+  String get rankObserver;
+
+  /// No description provided for @rankGuardian.
+  ///
+  /// In en, this message translates to:
+  /// **'Void Guardian'**
+  String get rankGuardian;
+
+  /// No description provided for @rankHunter.
+  ///
+  /// In en, this message translates to:
+  /// **'Nebula Hunter'**
+  String get rankHunter;
+
+  /// No description provided for @rankVoyager.
+  ///
+  /// In en, this message translates to:
+  /// **'Intergalactic Voyager'**
+  String get rankVoyager;
+
+  /// No description provided for @rankMaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Constellation Master'**
+  String get rankMaster;
+
+  /// No description provided for @rankArchitect.
+  ///
+  /// In en, this message translates to:
+  /// **'Cosmic Architect'**
+  String get rankArchitect;
+
+  /// No description provided for @missionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Missions'**
+  String get missionTitle;
+
+  /// No description provided for @missionDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get missionDaily;
+
+  /// No description provided for @missionWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get missionWeekly;
+
+  /// No description provided for @missionMilestones.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones'**
+  String get missionMilestones;
+
+  /// No description provided for @missionFocus1.
+  ///
+  /// In en, this message translates to:
+  /// **'First Focus'**
+  String get missionFocus1;
+
+  /// No description provided for @missionFocus1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete 1 focus session of at least 20 minutes.'**
+  String get missionFocus1Desc;
+
+  /// No description provided for @missionStars500.
+  ///
+  /// In en, this message translates to:
+  /// **'Stellar Harvest'**
+  String get missionStars500;
+
+  /// No description provided for @missionStars500Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect 500 stars in a single day.'**
+  String get missionStars500Desc;
 }
 
 class _AppLocalizationsDelegate
